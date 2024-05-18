@@ -3,10 +3,16 @@
 
 Vector3D::Vector3D() : x(0.0f), y(0.0f), z(0.0f) {}
 
-Vector3D::Vector3D(float x_val, float y_val, float z_val) : x(x_val), y(y_val), z(z_val) {}
+Vector3D::Vector3D(float x_, float y_, float z_) : x(x_), y(y_), z(z_) {}
 
 Vector3D Vector3D::operator + (const Vector3D& other) const {
     return Vector3D(x+other.x, y+other.y, z+other.z);
+}
+
+void Vector3D::operator += (const Vector3D& other) {
+    x += other.x;
+    y += other.y;
+    z += other.z;
 }
 
 Vector3D Vector3D::operator - () const {
@@ -17,8 +23,20 @@ Vector3D Vector3D::operator - (const Vector3D& other) const {
     return Vector3D(x-other.x, y-other.y, z-other.z);
 }
 
+void Vector3D::operator -= (const Vector3D& other) {
+    x -= other.x;
+    y -= other.y;
+    z -= other.z;
+}
+
 Vector3D Vector3D::operator * (float scalar) const {
     return Vector3D(x*scalar, y*scalar, z*scalar);
+}
+
+void Vector3D::operator *= (float scalar) {
+    x *= scalar;
+    y *= scalar;
+    z *= scalar;
 }
 
 Vector3D Vector3D::mul_scale(float scalar_x, float scalar_y, float scalar_z) const {
@@ -30,26 +48,37 @@ float Vector3D::dot(const Vector3D& other) const {
 }
 
 float Vector3D::mag(void) const {
-    return sqrt(x*x + y*y + z*z);
+    return sqrtf(x*x + y*y + z*z);
 }
 
 float Vector3D::mag_square(void) const {
     return x*x + y*y + z*z;
 }
 
+void Vector3D::normalized(void) {
+    float magnitude = mag();
+    assert(magnitude != 0.0f);
+
+    x /= magnitude;
+    y /= magnitude;
+    z /= magnitude;
+}
+
 Vector3D Vector3D::normalize(void) const {
     float magnitude = mag();
-    if (magnitude != 0) {
-        return Vector3D(x/magnitude ,y/magnitude ,z/magnitude);
-    } else {
-        return Vector3D();
-    }
+    assert(magnitude != 0.0f);
+
+    return Vector3D(x/magnitude ,y/magnitude ,z/magnitude);
 }
 
 Vector3D Vector3D::cross(const Vector3D& other) const {
     return Vector3D(y*other.z - z*other.y,
                     z*other.x - x*other.z,
                     x*other.y - y*other.x);
+}
+
+Vector3D Vector3D::projection(const Vector3D& vector, const Vector3D& onto) {
+    return onto * (onto.dot(vector) / onto.dot(onto));
 }
 
 Vector3D Vector3D::bisector(const Vector3D& unit1, const Vector3D& unit2) {

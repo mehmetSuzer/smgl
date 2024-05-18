@@ -5,27 +5,24 @@
 #include <color.h>
 #include <vector3d.h>
 
+#define DIFFUSE_COEF   0.8f
+#define SPECULAR_COEF  0.6f
+#define SPECULAR_POW   8.0f
+#define AMBIENT_COEF   0.05f
+
 typedef struct {
     float t;
     Vector3D hit_location;
     Vector3D normal;
 } Intersect;
 
-typedef enum {NONE, SPHERE, TRIANGLE} Shape_Type;
-
 class Shape {
 public:
-    Shape_Type type;
-    Color color;
-    float diffuse_coef;
-    float specular_coef;
-    float specular_pow;
-    float ambient_coef;
-    bool reflect;
+    const Color color;
+    const bool reflect;
 
-    Shape(Shape_Type type, const Color& color, float diffuse_coef, float specular_coef, float specular_pow, float ambient_coef, bool reflect);
-
-    virtual bool intersect(Intersect *intersect, const Vector3D& source, const Vector3D& ray) const = 0;
+    Shape(const Color& color_, bool reflect_) : color(color_), reflect(reflect_) {}
+    virtual bool intersect(Intersect *intersect, const Ray& ray) const = 0;
 };
 
 #endif // __SHAPE_H__

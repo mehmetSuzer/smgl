@@ -14,25 +14,18 @@ public:
     Matrix3x3(float xs[3][3]);
 
     Matrix3x3 operator + (const Matrix3x3& other) const;
-
     Matrix3x3 operator - (const Matrix3x3& other) const;
-
     Matrix3x3 operator * (float scalar) const;
-
     Matrix3x3 operator * (const Matrix3x3& matrix) const;
-
     Vector3D operator * (const Vector3D& vec) const;
 
     Matrix3x3 transpose(void) const;
 
     float det(void) const;
-
     float trace(void) const;
 
     Vector3D column(uint32_t column) const;
-
     Vector3D row(uint32_t row) const;
-
     Vector3D cramers_rule(const Vector3D& vector) const;
 };
 

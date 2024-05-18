@@ -4,11 +4,7 @@
 
 Color::Color() : red(0), green(0), blue(0) {}
 
-Color::Color(uint8_t red, uint8_t green, uint8_t blue) {
-    Color::red = red;
-    Color::green = green;
-    Color::blue = blue;
-}
+Color::Color(uint8_t red_, uint8_t green_, uint8_t blue_) : red(red_), green(green_), blue(blue_) {}
 
 Color::Color(const char* color) {
     if (strcmp(color, "RED") == 0) {
@@ -123,24 +119,4 @@ void Color::operator *= (const Color& other) {
     red = (uint8_t)(red / 255.0f * other.red);
     green = (uint8_t)(green / 255.0f * other.green);
     blue = (uint8_t)(blue / 255.0f * other.blue);
-}
-
-Color Color::operator / (float scalar) const {
-    if (scalar <= 0.0f) {
-        scalar = INFINITY;
-    }
-    return Color(red / scalar, green / scalar, blue / scalar);
-}
-
-void Color::operator /= (float scalar) {
-    if (scalar <= 0.0f) {
-        scalar = INFINITY;
-    }
-    red = (uint8_t)((float)red/scalar);
-    green = (uint8_t)((float)green/scalar);
-    blue = (uint8_t)((float)blue/scalar);
-}
-
-void Color::print(void) const {
-    std::cout << (uint32_t)red << " " << (uint32_t)green << " " << (uint32_t)blue << std::endl;
 }

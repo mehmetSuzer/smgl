@@ -112,7 +112,7 @@ Vector3D Matrix3x3::row(uint32_t row) const {
     return Vector3D(xs[row][0], xs[row][1], xs[row][2]);
 }
 
-Vector3D Matrix3x3::cramers_rule(const Vector3D& vector) const {
+Vector3D Matrix3x3::cramers_rule(const Vector3D& vector) const { // write this more efficiently
     float determinant = det();
 
     float result_x = Matrix3x3(vector, column(1), column(2)).det() / determinant;

@@ -8,6 +8,8 @@ set(CMAKE_CXX_STANDARD 17)
 project(smgl VERSION 0.1.0)
 
 set(LIB_DIR lib)
+set(DATA_DIR data)
+file(COPY ${CMAKE_SOURCE_DIR}/${DATA_DIR} DESTINATION ${CMAKE_BINARY_DIR})
 
 add_subdirectory(${LIB_DIR}/stb)
 include_directories(${LIB_DIR}/stb)
@@ -33,21 +35,20 @@ include_directories(${LIB_DIR}/sphere)
 add_subdirectory(${LIB_DIR}/triangle)
 include_directories(${LIB_DIR}/triangle)
 
-add_subdirectory(${LIB_DIR}/light)
-include_directories(${LIB_DIR}/light)
+add_subdirectory(${LIB_DIR}/bezier)
+include_directories(${LIB_DIR}/bezier)
 
 add_executable(${PROJECT_NAME}
     main.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
-    stb
+    bezier
+    triangle
+    sphere
+    camera
     color
     vector3d
-    triangle
     matrix3x3
-    camera
-    shape
-    sphere
-    light
+    stb
 )
