@@ -1,10 +1,10 @@
 
 #include "triangle.h"
 
-Triangle::Triangle(): Shape(Color("BLACK"), false) {}
+Triangle::Triangle(): Shape(Color("BLACK"), false, true, VACUUM_REFRACTIVE_INDEX) {}
     
-Triangle::Triangle(const Vector3D& a_, const Vector3D& b_, const Vector3D& c_, const Color& color, bool reflect):
-    Shape(color, reflect), a(a_), b(b_), c(c_), normal((b_-a_).cross(c_-a_).normalize()) {}
+Triangle::Triangle(const Vector3D& a_, const Vector3D& b_, const Vector3D& c_, const Color& color, bool reflect, float transparency, float refractive_index):
+    Shape(color, reflect, transparency, refractive_index), a(a_), b(b_), c(c_), normal((b_-a_).cross(c_-a_).normalize()) {}
 
 bool Triangle::intersect(Intersect *intersect, const Ray& ray) const {
     // Calculate Beta, Gamma, and t with Cramer's Rule

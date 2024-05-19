@@ -12,7 +12,7 @@ public:
     const float radius;
 
     Sphere();
-    Sphere(const Vector3D& center_, float radius_, const Color& color, bool reflect);
+    Sphere(const Vector3D& center_, float radius_, const Color& color, bool reflect, float transparency, float refractive_index);
 
     bool intersect(Intersect *intersect, const Ray& ray) const override;
 };

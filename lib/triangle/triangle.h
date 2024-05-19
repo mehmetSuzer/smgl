@@ -15,7 +15,7 @@ public:
     const Vector3D normal;
 
     Triangle();
-    Triangle(const Vector3D& a_, const Vector3D& b_, const Vector3D& c_, const Color& color, bool reflect);
+    Triangle(const Vector3D& a_, const Vector3D& b_, const Vector3D& c_, const Color& color, bool reflect, float transparency, float refractive_index);
     
     bool intersect(Intersect *intersect, const Ray& ray) const override;
 };

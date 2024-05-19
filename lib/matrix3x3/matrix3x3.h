@@ -27,12 +27,13 @@ public:
     Vector3D column(uint32_t column) const;
     Vector3D row(uint32_t row) const;
     Vector3D cramers_rule(const Vector3D& vector) const;
+
+    static Vector3D rotate_x(const Vector3D& vector, float radian);
+    static Vector3D rotate_y(const Vector3D& vector, float radian);
+    static Vector3D rotate_z(const Vector3D& vector, float radian);
+
+    static Vector3D rotate(const Vector3D& vector, float radian_x, float radian_y, float radian_z);
 };
 
-Vector3D rotate_x(const Vector3D& vector, float radian);
-Vector3D rotate_y(const Vector3D& vector, float radian);
-Vector3D rotate_z(const Vector3D& vector, float radian);
-
-Vector3D rotate(const Vector3D& vector, float radian_x, float radian_y, float radian_z);
 
 #endif // __MATRIX3X3_H__

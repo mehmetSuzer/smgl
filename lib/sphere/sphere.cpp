@@ -1,10 +1,10 @@
 
 #include "sphere.h"
 
-Sphere::Sphere(): Shape(Color("WHITE"), false), radius(1.0f) {}
+Sphere::Sphere(): Shape(Color("WHITE"), false, true, VACUUM_REFRACTIVE_INDEX), radius(1.0f) {}
 
-Sphere::Sphere(const Vector3D& center_, float radius_, const Color& color, bool reflect): 
-    Shape(color, reflect), center(center_), radius(radius_) {
+Sphere::Sphere(const Vector3D& center_, float radius_, const Color& color, bool reflect, float transparency, float refractive_index): 
+    Shape(color, reflect, transparency, refractive_index), center(center_), radius(radius_) {
     assert(radius_ > 0.0f);
 }
 

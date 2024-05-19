@@ -122,7 +122,7 @@ Vector3D Matrix3x3::cramers_rule(const Vector3D& vector) const { // write this m
     return Vector3D(result_x, result_y, result_z);
 }
 
-Vector3D rotate_x(const Vector3D& vector, float radian) {
+Vector3D Matrix3x3::rotate_x(const Vector3D& vector, float radian) {
     if (radian == 0.0f) {
         return vector;
     } else {
@@ -131,7 +131,7 @@ Vector3D rotate_x(const Vector3D& vector, float radian) {
     }
 }
 
-Vector3D rotate_y(const Vector3D& vector, float radian) {
+Vector3D Matrix3x3::rotate_y(const Vector3D& vector, float radian) {
     if (radian == 0.0f) {
         return vector;
     } else {
@@ -140,7 +140,7 @@ Vector3D rotate_y(const Vector3D& vector, float radian) {
     }
 }
 
-Vector3D rotate_z(const Vector3D& vector, float radian) {
+Vector3D Matrix3x3::rotate_z(const Vector3D& vector, float radian) {
     if (radian == 0.0f) {
         return vector;
     } else {
@@ -149,7 +149,7 @@ Vector3D rotate_z(const Vector3D& vector, float radian) {
     }
 }
 
-Vector3D rotate(const Vector3D& vector, float radian_x, float radian_y, float radian_z) {
+Vector3D Matrix3x3::rotate(const Vector3D& vector, float radian_x, float radian_y, float radian_z) {
     return rotate_z(rotate_y(rotate_x(vector, radian_x), radian_y), radian_z);
 }
 
