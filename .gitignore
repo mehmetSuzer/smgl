@@ -1,4 +1,5 @@
 build
 .vscode
 TODO
-.image.png
+*.png
+report.*
