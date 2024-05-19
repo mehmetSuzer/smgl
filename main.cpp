@@ -12,66 +12,65 @@
 #define smaller(x, y) ((x > y) ? y : x)
 #define greater(x, y) ((x > y) ? x : y)
 
-#define MAX_RECURSIVE_RAY_TRACING_DEPTH 2UL
+#define MAX_RECURSIVE_RAY_TRACING_DEPTH 4UL
 
-#define HEIGHT  600UL
-#define WIDTH   600UL
+#define IMAGE_HEIGHT  600UL
+#define IMAGE_WIDTH   600UL
 
 #define THREAD_NUMBER 12UL
-#define WIDTH_PER_THREAD (WIDTH/THREAD_NUMBER)
+#define WIDTH_PER_THREAD (IMAGE_WIDTH/THREAD_NUMBER)
 
-const float SURFACE_LEVEL = -50.0f;
+const float GROUND_LEVEL = -50.0f;
 const Color AMBIENT_COLOR = Color("WHITE");
 const Color BACKGROUND_COLOR = Color("BLACK");
-Color image[HEIGHT*WIDTH];
+Color image[IMAGE_HEIGHT * IMAGE_WIDTH];
 
 /* ----------------------------------------------------------------------*/
 
 const Vector3D vertices[] = {
             //          X                     Y                           Z
-    Vector3D(40.0f,                     SURFACE_LEVEL,                  200.0f), // pyramid
-    Vector3D(40.0f + 40.0f*sqrtf(2.0f), SURFACE_LEVEL,                  200.0f + 40.0f*sqrtf(2.0f)),
-    Vector3D(40.0f,                     SURFACE_LEVEL,                  200.0f + 80.0f*sqrtf(2.0f)),
-    Vector3D(40.0f - 40.0f*sqrtf(2.0f), SURFACE_LEVEL,                  200.0f + 40.0f*sqrtf(2.0f)),
-    Vector3D(40.0f,                     SURFACE_LEVEL + 50*sqrtf(2.0f), 200.0f + 40.0f*sqrtf(2.0f)),
+    Vector3D(60.0f,                     GROUND_LEVEL,                  180.0f), // pyramid
+    Vector3D(60.0f + 40.0f*sqrtf(2.0f), GROUND_LEVEL,                  180.0f + 40.0f*sqrtf(2.0f)),
+    Vector3D(60.0f,                     GROUND_LEVEL,                  180.0f + 80.0f*sqrtf(2.0f)),
+    Vector3D(60.0f - 40.0f*sqrtf(2.0f), GROUND_LEVEL,                  180.0f + 40.0f*sqrtf(2.0f)),
+    Vector3D(60.0f,                     GROUND_LEVEL + 50*sqrtf(2.0f), 180.0f + 40.0f*sqrtf(2.0f)),
 
-    Vector3D(-50.0f,                    SURFACE_LEVEL + 40.0f,          220.0f), // spheres
-
-    Vector3D(0.0f,                      SURFACE_LEVEL,                  -100.0f), // plane
-    Vector3D(-1000.0f,                  SURFACE_LEVEL,                  1000.0f),
-    Vector3D(1000.0f,                   SURFACE_LEVEL,                  1000.0f),
+    Vector3D(0.0f,                      GROUND_LEVEL,                  -100.0f), // plane
+    Vector3D(-1000.0f,                  GROUND_LEVEL,                  1000.0f),
+    Vector3D(1000.0f,                   GROUND_LEVEL,                  1000.0f),
 };
 const uint32_t vertex_number = sizeof(vertices) / sizeof(vertices[0]);
 
 /* ----------------------------------------------------------------------*/
 
 const Sphere spheres[] = {
-    Sphere(vertices[5], 40.0f, Color("GREEN"), true, 0.0f, VACUUM_REFRACTIVE_INDEX),
+    Sphere(Vector3D(-30.0f, GROUND_LEVEL + 50.0f, 200.0f), 50.0f, Color("YELLOW"), true, 0.0f, VACUUM_REFRACTIVE_INDEX),
 };
 const uint32_t sphere_number = sizeof(spheres) / sizeof(spheres[0]);
 
 /* ----------------------------------------------------------------------*/
 
 const Triangle triangles[] = {
-    Triangle(vertices[0], vertices[1], vertices[4], Color("RED"), true, 0.0f, VACUUM_REFRACTIVE_INDEX), // Pyramid Side surfaces
+    Triangle(vertices[0], vertices[1], vertices[4], Color("CYAN"), true, 0.0f, VACUUM_REFRACTIVE_INDEX), // pyramid side surfaces
     Triangle(vertices[1], vertices[2], vertices[4], Color("GREEN"), true, 0.0f, VACUUM_REFRACTIVE_INDEX),
     Triangle(vertices[2], vertices[3], vertices[4], Color("BLUE"), true, 0.0f, VACUUM_REFRACTIVE_INDEX),
-    Triangle(vertices[0], vertices[3], vertices[4], Color("CYAN"), true, 0.0f, VACUUM_REFRACTIVE_INDEX),
+    Triangle(vertices[0], vertices[3], vertices[4], Color("RED"), true, 0.0f, VACUUM_REFRACTIVE_INDEX),
 
-    Triangle(vertices[0], vertices[1], vertices[2], Color("MAGENTA"), true, 0.0f, VACUUM_REFRACTIVE_INDEX), // Pyramid Bottom surface
+    Triangle(vertices[0], vertices[1], vertices[2], Color("MAGENTA"), true, 0.0f, VACUUM_REFRACTIVE_INDEX), // pyramid bottom surface
     Triangle(vertices[0], vertices[3], vertices[2], Color("YELLOW"), true, 0.0f, VACUUM_REFRACTIVE_INDEX),
 
-    Triangle(vertices[6], vertices[7], vertices[8], Color("GRAY"), true, 0.0f, VACUUM_REFRACTIVE_INDEX), // plane
+    Triangle(vertices[5], vertices[6], vertices[7], Color("GRAY"), true, 0.0f, VACUUM_REFRACTIVE_INDEX), // plane
 };
 const uint32_t triangle_number = sizeof(triangles) / sizeof(triangles[0]);
 
 /* ----------------------------------------------------------------------*/
 
-const float bezier_scalar = 16.0f;
+const float bezier_scalar = 20.0f;
 const float bezier_rotation_x = 0.0f;
 const float bezier_rotation_y = 0.0f;
 const float bezier_rotation_z = 0.0f;
-const Vector3D bezier_position = Vector3D(-20.0f, SURFACE_LEVEL+20.0f, 160.0f);
+const uint32_t bezier_subdivision = 4;
+const Vector3D bezier_position = Vector3D(0.0f, GROUND_LEVEL + 10.0f, 140.0f);
 
 // Initialized in the main function
 std::vector<BezierSurface> bezier_vector;
@@ -81,15 +80,15 @@ uint32_t bezier_surface_number;
 /* ----------------------------------------------------------------------*/
 
 const Light lights[] = {
-    Light{Vector3D(0.0f, SURFACE_LEVEL + 200.0f, 200.0f), Color("WHITE")},
-    // Light{Vector3D(80.0f, SURFACE_LEVEL + 150.0f, 250.0f), Color("CYAN")},
+    Light{Vector3D(0.0f, GROUND_LEVEL + 120.0f, 80.0f), Color("WHITE")},
+    // Light{Vector3D(80.0f, GROUND_LEVEL + 150.0f, 250.0f), Color("CYAN")},
 };
 const uint32_t light_number = sizeof(lights) / sizeof(lights[0]);
 
 /* ----------------------------------------------------------------------*/
 
 const Camera camera(
-    WIDTH, HEIGHT, 
+    IMAGE_WIDTH, IMAGE_HEIGHT, 
     Vector3D(-50.0f, -50.0f, 100.0f), 
     Vector3D(50.0f, 50.0f, 100.0f), 
     Vector3D(0.0f, 0.0f, 0.0f)
@@ -156,21 +155,21 @@ void cast_ray(Ray& ray, Color& color, float incoming_refractive_index, uint32_t 
             // Check if any sphere prevents light beams from hitting to the hit location
             for (j = 0; j < sphere_number && shadowing_shape_transparency == 1.0f; j++) {
                 if (spheres[j].intersect(NULL, light_ray)) {
-                    shadowing_shape_transparency = spheres[i].getTransparency();
+                    shadowing_shape_transparency = spheres[j].getTransparency();
                 }
             }
 
             // Check if any triangle prevents light beams from hitting to the hit location
             for (j = 0; j < triangle_number && shadowing_shape_transparency == 1.0f; j++) {
                 if (triangles[j].intersect(NULL, light_ray)) {
-                    shadowing_shape_transparency = triangles[i].getTransparency();
+                    shadowing_shape_transparency = triangles[j].getTransparency();
                 }
             }
 
             // Check if any bezier surface prevents light beams from hitting to the hit location
             for (j = 0; j < bezier_surface_number && shadowing_shape_transparency == 1.0f; j++) {
                 if (bezier_surfaces[j].intersect(NULL, light_ray)) {
-                    shadowing_shape_transparency = bezier_surfaces[i].getTransparency();
+                    shadowing_shape_transparency = bezier_surfaces[j].getTransparency();
                 }
             }
 
@@ -180,19 +179,18 @@ void cast_ray(Ray& ray, Color& color, float incoming_refractive_index, uint32_t 
             const float specular = SPECULAR_COEF * powf(greater(bisector.dot(closest_intersect.normal), 0.0f), SPECULAR_POW);
             
             // Calculate the intensity
-	        const float a = 0.00001f;
+	        const float a = 0.00002f;
 	        const float b = 0.00001f;
             const float distance = light_vector.mag();
 	        const float intensity = 1.0f / (a * distance * distance + b * distance + 1.0f);
 
             // Calculate the color that will be added
-            // As the recursion depth increases, the effect of reflections get smaller
-            Color added_color = closest_shape->getColor() * lights[i].color 
-                * ((diffuse+specular) 
-                * intensity
-                / (depth_count*depth_count))
-                * shadowing_shape_transparency
-                * (1.0f - closest_shape->getTransparency());
+            const Color added_color = closest_shape->getColor() * lights[i].color 
+                * ((diffuse + specular) 
+                * intensity                                     // Intensity of the light at the point
+                / (depth_count * depth_count)                   // As the recursion depth increases, the effect of reflections get smaller
+                * shadowing_shape_transparency                  // If an object casts shadow onto the point, use its transparency
+                * (1.0f - closest_shape->getTransparency()));   // Opacity of the object contributes to the color at the point
             color += added_color;
         }
 
@@ -209,8 +207,8 @@ void cast_ray(Ray& ray, Color& color, float incoming_refractive_index, uint32_t 
 
             // If there is no total reflection, then calculate the ray and call the function recursively
             if (!total_reflection) {
-                Vector3D dir_perpendicular_to_normal = (ray.dir - closest_intersect.normal*normal_dot_coming_dir).normalize();
-                Vector3D refraction_dir = (-closest_intersect.normal + 
+                const Vector3D dir_perpendicular_to_normal = (ray.dir - closest_intersect.normal*normal_dot_coming_dir).normalize();
+                const Vector3D refraction_dir = (-closest_intersect.normal + 
                     dir_perpendicular_to_normal*(incoming_refractive_index/outgoing_refractive_index*sin_coming_angle)).normalize();
 
                 refraction_ray = {
@@ -218,11 +216,12 @@ void cast_ray(Ray& ray, Color& color, float incoming_refractive_index, uint32_t 
                     .dir = refraction_dir,
                 };
 
+                // Recursion depth does not increase since we want objects behind a transparent object to contribute more
                 cast_ray(refraction_ray, color, outgoing_refractive_index, depth_count);
             }
         }
 
-         // If a total reflection occurs, or the surface is reflective
+        // If a total reflection occurs, or the surface is reflective
         if (total_reflection || closest_shape->isReflective()) {
             // Calculate the reflection ray and call the function recursively
             Ray reflection_ray = {
@@ -237,6 +236,7 @@ void cast_ray(Ray& ray, Color& color, float incoming_refractive_index, uint32_t 
     }
 }
 
+// Reads the cubic beziers and returns them in a vector
 std::vector<Vector3D> read_cubic_bezier_data(const char* filename) {
     std::ifstream file(filename);
     if (!file.is_open()) {
@@ -263,19 +263,20 @@ readCubicBezierSurfacesOutOfLoop:
     return data;
 }
 
+// The function which renders a portion of the image
 void thread_function(uint32_t width_start, uint32_t width_end) {
     // Recursive ray tracing
     for (uint32_t i = width_start; i < width_end; i++) { // x axis
-        for (uint32_t j = 0; j < HEIGHT; j++) { // y axis     
+        for (uint32_t j = 0; j < IMAGE_HEIGHT; j++) { // y axis     
             // Generate a ray from camera to the center of the pixel
-            Ray ray = camera.generate_ray((i+0.5f)/WIDTH, (j+0.5f)/HEIGHT);
+            Ray ray = camera.generate_ray((i+0.5f)/IMAGE_WIDTH, (j+0.5f)/IMAGE_HEIGHT);
             
             // Calculate the color of the pixel
             Color color = Color("BLACK");
             cast_ray(ray, color, SPACE_REFRACTIVE_INDEX, 1);
             
             // Write to buffer
-            image[(HEIGHT-j-1)*WIDTH + i] = color;
+            image[(IMAGE_HEIGHT-j-1)*IMAGE_WIDTH + i] = color;
         }
     }
 }
@@ -291,7 +292,7 @@ int main(int argc, char **argv) {
     bezier_surface_number = bezier_vertices.size() / 16;
 
     for (uint32_t i = 0; i < bezier_surface_number; i++) {
-        bezier_vector.push_back(BezierSurface(bezier_vertices.data() + 16*i, Color("CYAN"), false, 0.99f, GLASS_REFRACTIVE_INDEX));
+        bezier_vector.push_back(BezierSurface(bezier_vertices.data() + 16*i, bezier_subdivision, Color("CYAN"), false, 0.99f, GLASS_REFRACTIVE_INDEX));
     }
     bezier_surfaces = bezier_vector.data();
     bezier_vertices.clear();
@@ -313,7 +314,7 @@ int main(int argc, char **argv) {
 
     // Write the image
     std::cout << "Writing image.png ..." << std::endl;
-    stbi_write_png("image.png", WIDTH, HEIGHT, 3, image, 3*WIDTH);
+    stbi_write_png("image.png", IMAGE_WIDTH, IMAGE_HEIGHT, 3, image, 3*IMAGE_WIDTH);
     std::cout << "Finished..." << std::endl;
     return 0;
 }

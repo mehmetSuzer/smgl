@@ -126,7 +126,7 @@ Vector3D Matrix3x3::rotate_x(const Vector3D& vector, float radian) {
     if (radian == 0.0f) {
         return vector;
     } else {
-        Matrix3x3 matrix = Matrix3x3({{cosf(radian), -sinf(radian), 0.0f}, {sinf(radian), cosf(radian), 0.0f}, {0.0f, 0.0f, 1.0f}});
+        Matrix3x3 matrix = Matrix3x3({{1.0f, 0.0f, 0.0f}, {0.0f, cosf(radian), -sinf(radian)}, {0.0f, sinf(radian), cosf(radian)}});
         return matrix * vector;
     }
 }
@@ -144,7 +144,7 @@ Vector3D Matrix3x3::rotate_z(const Vector3D& vector, float radian) {
     if (radian == 0.0f) {
         return vector;
     } else {
-        Matrix3x3 matrix = Matrix3x3({{1.0f, 0.0f, 0.0f}, {0.0f, cosf(radian), -sinf(radian)}, {0.0f, sinf(radian), cosf(radian)}});
+        Matrix3x3 matrix = Matrix3x3({{cosf(radian), -sinf(radian), 0.0f}, {sinf(radian), cosf(radian), 0.0f}, {0.0f, 0.0f, 1.0f}});
         return matrix * vector;
     }
 }

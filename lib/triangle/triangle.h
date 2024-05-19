@@ -8,12 +8,13 @@
 #include <shape.h>
 
 class Triangle : public Shape {
-public:
+private:
     const Vector3D a;
     const Vector3D b;
     const Vector3D c;
     const Vector3D normal;
 
+public:
     Triangle();
     Triangle(const Vector3D& a_, const Vector3D& b_, const Vector3D& c_, const Color& color, bool reflect, float transparency, float refractive_index);
     

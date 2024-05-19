@@ -7,11 +7,12 @@
 #include <math.h>
 
 class Color {
-public:
+private:
     uint8_t red;
     uint8_t green;
     uint8_t blue;
 
+public:
     Color();
     Color(uint8_t red_, uint8_t green_, uint8_t blue_);
     Color(const char* color);

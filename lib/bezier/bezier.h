@@ -8,7 +8,7 @@
 
 class BezierSurface : public Shape {
 private:
-    static const uint32_t subdivision = 4;
+    const uint32_t subdivision;
     std::vector<Vector3D> vertices;
     std::vector<Triangle> triangles;
 
@@ -17,7 +17,7 @@ private:
 
 public:
     BezierSurface();
-    BezierSurface(Vector3D* controls, const Color& color, bool reflect, float transparency, float refractive_index);
+    BezierSurface(Vector3D* controls, uint32_t subdivision_, const Color& color, bool reflect, float transparency, float refractive_index);
 
     bool intersect(Intersect *intersect, const Ray& ray) const override;
 };

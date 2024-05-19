@@ -30,9 +30,9 @@ typedef struct {
 class Shape {
 private:
     const Color color;
-    bool reflect;
-    float transparency;
-    float refractive_index;
+    const bool reflect;
+    const float transparency;
+    const float refractive_index;
 
 public:
     Shape(const Color& color_, bool reflect_, float transparency_, float refractive_index_) 
@@ -43,10 +43,6 @@ public:
 
     float getTransparency(void) const {
         return transparency;
-    }
-
-    bool isOpaque(void) const {
-        return transparency == 0.0f;
     }
 
     bool isReflective(void) const {

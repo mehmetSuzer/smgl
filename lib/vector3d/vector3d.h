@@ -40,5 +40,3 @@ typedef struct {
 } Ray;
 
 #endif // __VECTOR3D_H__
-
-

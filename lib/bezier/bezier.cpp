@@ -1,11 +1,11 @@
 
 #include "bezier.h"
 
-BezierSurface::BezierSurface() : Shape(Color("BLACK"), false, true, VACUUM_REFRACTIVE_INDEX) {}
+BezierSurface::BezierSurface() : Shape(Color("BLACK"), false, true, VACUUM_REFRACTIVE_INDEX), subdivision(4) {}
 
-BezierSurface::BezierSurface(Vector3D* controls, const Color& color, bool reflect, float transparency, float refractive_index) 
-    : Shape(color, reflect, transparency, refractive_index) {
-    // Sample (subdivision X subdivision) many points on the surface
+BezierSurface::BezierSurface(Vector3D* controls, uint32_t subdivision_, const Color& color, bool reflect, float transparency, float refractive_index) 
+    : Shape(color, reflect, transparency, refractive_index), subdivision(subdivision_) {
+    // Sample (subdivision X subdivision) many surfaces
     for (uint32_t i = 0; i <= subdivision; i++) {
         float u = static_cast<float>(i) / subdivision;
         for (uint32_t j = 0; j <= subdivision; j++) {
@@ -14,7 +14,7 @@ BezierSurface::BezierSurface(Vector3D* controls, const Color& color, bool reflec
         }
     }
 
-    // Triangulate the surface
+    // Triangulate the surfaces
     for (uint32_t i = 0; i < subdivision; i++) {
         for (uint32_t j = 0; j < subdivision; j++) {
             Vector3D vertex1 = vertices[i*(subdivision+1)+j];

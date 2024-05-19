@@ -7,10 +7,11 @@
 #include <shape.h>
 
 class Sphere : public Shape {
-public:
+private:
     const Vector3D center;
     const float radius;
 
+public:
     Sphere();
     Sphere(const Vector3D& center_, float radius_, const Color& color, bool reflect, float transparency, float refractive_index);
 
