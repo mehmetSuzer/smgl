@@ -70,6 +70,8 @@ const float bezier_rotation_x = 0.0f;
 const float bezier_rotation_y = 0.0f;
 const float bezier_rotation_z = 0.0f;
 const uint32_t bezier_subdivision = 4;
+const float bezier_transparency = 0.99f;
+const float bezier_refractive_index = GLASS_REFRACTIVE_INDEX;
 const Vector3D bezier_position = Vector3D(0.0f, GROUND_LEVEL + 10.0f, 140.0f);
 
 // Initialized in the main function
@@ -292,7 +294,16 @@ int main(int argc, char **argv) {
     bezier_surface_number = bezier_vertices.size() / 16;
 
     for (uint32_t i = 0; i < bezier_surface_number; i++) {
-        bezier_vector.push_back(BezierSurface(bezier_vertices.data() + 16*i, bezier_subdivision, Color("CYAN"), false, 0.99f, GLASS_REFRACTIVE_INDEX));
+        bezier_vector.push_back(
+            BezierSurface(
+                bezier_vertices.data() + 16*i, 
+                bezier_subdivision, 
+                Color("CYAN"), 
+                false, 
+                bezier_transparency, 
+                bezier_refractive_index
+            )
+        );
     }
     bezier_surfaces = bezier_vector.data();
     bezier_vertices.clear();
