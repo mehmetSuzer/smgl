@@ -18,7 +18,8 @@
 #define SAPPHIRE_REFRACTIVE_INDEX   1.77f
 #define DIAMOND_REFRACTIVE_INDEX    2.417f
 
-#define DEFAULT_REFRACTIVE_INDEX VACUUM_REFRACTIVE_INDEX
+// Refractive index of the rendered world
+#define SPACE_REFRACTIVE_INDEX VACUUM_REFRACTIVE_INDEX
 
 typedef struct {
     float t;
@@ -27,16 +28,37 @@ typedef struct {
 } Intersect;
 
 class Shape {
-public: // Make these protected and private
+private:
     const Color color;
     bool reflect;
     float transparency;
     float refractive_index;
 
+public:
     Shape(const Color& color_, bool reflect_, float transparency_, float refractive_index_) 
         : color(color_), reflect(reflect_), transparency(transparency_), refractive_index(refractive_index_) {
         assert(0.0f <= transparency_ && transparency_ < 1.0f);
         assert(refractive_index_ >= 1.0f);
+    }
+
+    float getTransparency(void) const {
+        return transparency;
+    }
+
+    bool isOpaque(void) const {
+        return transparency == 0.0f;
+    }
+
+    bool isReflective(void) const {
+        return reflect;
+    }
+
+    float getRefractiveIndex(void) const {
+        return refractive_index;
+    }
+
+    const Color& getColor(void) const {
+        return color;
     }
 
     virtual bool intersect(Intersect *intersect, const Ray& ray) const = 0;
