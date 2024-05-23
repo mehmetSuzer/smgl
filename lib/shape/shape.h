@@ -29,7 +29,7 @@ typedef struct {
 
 class Shape {
 private:
-    const Color color;
+    const Color& color;
     const bool reflect;
     const float transparency;
     const float refractive_index;
@@ -57,7 +57,7 @@ public:
         return color;
     }
 
-    virtual bool intersect(Intersect *intersect, const Ray& ray) const = 0;
+    virtual bool intersect(Intersect* intersect, const Ray& ray) const = 0;
 };
 
 #endif // __SHAPE_H__

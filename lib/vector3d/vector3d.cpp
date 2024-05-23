@@ -15,7 +15,7 @@ void Vector3D::operator += (const Vector3D& other) {
     z += other.z;
 }
 
-Vector3D Vector3D::operator - () const {
+Vector3D Vector3D::operator - (void) const {
     return Vector3D(-x, -y, -z);
 }
 
@@ -39,7 +39,7 @@ void Vector3D::operator *= (float scalar) {
     z *= scalar;
 }
 
-Vector3D Vector3D::mul_scale(float scalar_x, float scalar_y, float scalar_z) const {
+Vector3D Vector3D::scale(float scalar_x, float scalar_y, float scalar_z) const {
     return Vector3D(x*scalar_x, y*scalar_y, z*scalar_z);
 }
 

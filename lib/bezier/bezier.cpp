@@ -1,7 +1,7 @@
 
 #include "bezier.h"
 
-BezierSurface::BezierSurface() : Shape(Color("BLACK"), false, true, VACUUM_REFRACTIVE_INDEX), subdivision(4) {}
+BezierSurface::BezierSurface() : Shape(Color::Black, false, true, VACUUM_REFRACTIVE_INDEX), subdivision(4) {}
 
 BezierSurface::BezierSurface(Vector3D* controls, uint32_t subdivision_, const Color& color, bool reflect, float transparency, float refractive_index) 
     : Shape(color, reflect, transparency, refractive_index), subdivision(subdivision_) {
@@ -49,7 +49,7 @@ Vector3D BezierSurface::getPoint(Vector3D* controls, float u, float v) const {
     Vector3D point = Vector3D();
     for (uint32_t i = 0; i < 4; i++) {
         for (uint32_t j = 0; j < 4; j++) {
-            point += controls[4*i+j] * (u_vector[i] * v_vector[j]);
+            point += controls[(i<<2)+j] * (u_vector[i] * v_vector[j]);
         }
     }
 
@@ -57,7 +57,7 @@ Vector3D BezierSurface::getPoint(Vector3D* controls, float u, float v) const {
 }
 
 // Checks whether the ray intersects a triangle 
-bool BezierSurface::intersect(Intersect *intersect, const Ray& ray) const {
+bool BezierSurface::intersect(Intersect* intersect, const Ray& ray) const {
     for (uint32_t i = 0; i < triangles.size(); i++) {
         if (triangles[i].intersect(intersect, ray)) {
             return true;

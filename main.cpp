@@ -21,9 +21,9 @@
 #define WIDTH_PER_THREAD (IMAGE_WIDTH/THREAD_NUMBER)
 
 const float GROUND_LEVEL = -50.0f;
-const Color AMBIENT_COLOR = Color("WHITE");
-const Color BACKGROUND_COLOR = Color("BLACK");
-Color image[IMAGE_HEIGHT * IMAGE_WIDTH];
+const Color& AMBIENT_COLOR = Color::White;
+const Color& BACKGROUND_COLOR = Color::Black;
+Color image[IMAGE_HEIGHT * IMAGE_WIDTH] = {Color(0,0,0)};
 
 /* ----------------------------------------------------------------------*/
 
@@ -44,22 +44,22 @@ const uint32_t vertex_number = sizeof(vertices) / sizeof(vertices[0]);
 /* ----------------------------------------------------------------------*/
 
 const Sphere spheres[] = {
-    Sphere(Vector3D(-30.0f, GROUND_LEVEL + 50.0f, 200.0f), 50.0f, Color("YELLOW"), true, 0.0f, VACUUM_REFRACTIVE_INDEX),
+    Sphere(Vector3D(-30.0f, GROUND_LEVEL + 50.0f, 200.0f), 50.0f, Color::Yellow, true, 0.0f, VACUUM_REFRACTIVE_INDEX),
 };
 const uint32_t sphere_number = sizeof(spheres) / sizeof(spheres[0]);
 
 /* ----------------------------------------------------------------------*/
 
 const Triangle triangles[] = {
-    Triangle(vertices[0], vertices[1], vertices[4], Color("CYAN"), true, 0.0f, VACUUM_REFRACTIVE_INDEX), // pyramid side surfaces
-    Triangle(vertices[1], vertices[2], vertices[4], Color("GREEN"), true, 0.0f, VACUUM_REFRACTIVE_INDEX),
-    Triangle(vertices[2], vertices[3], vertices[4], Color("BLUE"), true, 0.0f, VACUUM_REFRACTIVE_INDEX),
-    Triangle(vertices[0], vertices[3], vertices[4], Color("RED"), true, 0.0f, VACUUM_REFRACTIVE_INDEX),
+    Triangle(vertices[0], vertices[1], vertices[4], Color::Cyan, true, 0.0f, VACUUM_REFRACTIVE_INDEX), // pyramid side surfaces
+    Triangle(vertices[1], vertices[2], vertices[4], Color::Green, true, 0.0f, VACUUM_REFRACTIVE_INDEX),
+    Triangle(vertices[2], vertices[3], vertices[4], Color::Blue, true, 0.0f, VACUUM_REFRACTIVE_INDEX),
+    Triangle(vertices[0], vertices[3], vertices[4], Color::Red, true, 0.0f, VACUUM_REFRACTIVE_INDEX),
 
-    Triangle(vertices[0], vertices[1], vertices[2], Color("MAGENTA"), true, 0.0f, VACUUM_REFRACTIVE_INDEX), // pyramid bottom surface
-    Triangle(vertices[0], vertices[3], vertices[2], Color("YELLOW"), true, 0.0f, VACUUM_REFRACTIVE_INDEX),
+    Triangle(vertices[0], vertices[1], vertices[2], Color::Magenta, true, 0.0f, VACUUM_REFRACTIVE_INDEX), // pyramid bottom surface
+    Triangle(vertices[0], vertices[3], vertices[2], Color::Yellow, true, 0.0f, VACUUM_REFRACTIVE_INDEX),
 
-    Triangle(vertices[5], vertices[6], vertices[7], Color("GRAY"), true, 0.0f, VACUUM_REFRACTIVE_INDEX), // plane
+    Triangle(vertices[5], vertices[6], vertices[7], Color::Gray, true, 0.0f, VACUUM_REFRACTIVE_INDEX), // plane
 };
 const uint32_t triangle_number = sizeof(triangles) / sizeof(triangles[0]);
 
@@ -82,23 +82,26 @@ uint32_t bezier_surface_number;
 /* ----------------------------------------------------------------------*/
 
 const Light lights[] = {
-    Light{Vector3D(0.0f, GROUND_LEVEL + 120.0f, 80.0f), Color("WHITE")},
-    // Light{Vector3D(80.0f, GROUND_LEVEL + 150.0f, 250.0f), Color("CYAN")},
+    Light{Vector3D(0.0f, GROUND_LEVEL + 120.0f, 80.0f), Color::White},
+    // Light{Vector3D(80.0f, GROUND_LEVEL + 150.0f, 250.0f), Color::Cyan},
 };
 const uint32_t light_number = sizeof(lights) / sizeof(lights[0]);
 
 /* ----------------------------------------------------------------------*/
 
-const Camera camera(
-    IMAGE_WIDTH, IMAGE_HEIGHT, 
-    Vector3D(-50.0f, -50.0f, 100.0f), 
-    Vector3D(50.0f, 50.0f, 100.0f), 
-    Vector3D(0.0f, 0.0f, 0.0f)
+const Camera camera = Camera(
+    Vector3D(0.0f, 0.0f, 0.0f), // position
+    Vector3D(0.0f, 0.0f, 1.0f), // direction
+    Vector3D(0.0f, 1.0f, 0.0f), // up
+    1.0f,                       // near
+    M_PIf / 3.0f,               // FOV
+    IMAGE_WIDTH, 
+    IMAGE_HEIGHT
 );
 
 /* ----------------------------------------------------------------------*/
 
-void cast_ray(Ray& ray, Color& color, float incoming_refractive_index, uint32_t depth_count) {
+void trace_ray(Ray& ray, Color& color, float incoming_refractive_index, uint32_t depth_count) {
     // If the max recursive depth is exceeded, then stop
     if (depth_count > MAX_RECURSIVE_RAY_TRACING_DEPTH) {
         return;
@@ -106,7 +109,7 @@ void cast_ray(Ray& ray, Color& color, float incoming_refractive_index, uint32_t 
 
     // Avoid floating point errors
     static const float epsilon = 0.1f;
-    ray.source += ray.dir * epsilon;
+    ray.origin += ray.dir * epsilon;
 
     uint32_t i, j;
     Intersect intersect;
@@ -149,7 +152,7 @@ void cast_ray(Ray& ray, Color& color, float incoming_refractive_index, uint32_t 
             const Vector3D light_vector = lights[i].position - closest_intersect.hit_location;
             const Vector3D light_dir = light_vector.normalize();
             const Ray light_ray = {
-                .source = closest_intersect.hit_location + light_dir*epsilon,
+                .origin = closest_intersect.hit_location + light_dir*epsilon,
                 .dir = light_dir,
             };
 
@@ -184,12 +187,12 @@ void cast_ray(Ray& ray, Color& color, float incoming_refractive_index, uint32_t 
 	        const float a = 0.00002f;
 	        const float b = 0.00001f;
             const float distance = light_vector.mag();
-	        const float intensity = 1.0f / (a * distance * distance + b * distance + 1.0f);
+	        const float inverse_intensity = (a * distance + b) * distance + 1.0f; // inverse_intensity = 1/intensity
 
             // Calculate the color that will be added
             const Color added_color = closest_shape->getColor() * lights[i].color 
                 * ((diffuse + specular) 
-                * intensity                                     // Intensity of the light at the point
+                / inverse_intensity                             // Intensity of the light at the point
                 / (depth_count * depth_count)                   // As the recursion depth increases, the effect of reflections get smaller
                 * shadowing_shape_transparency                  // If an object casts shadow onto the point, use its transparency
                 * (1.0f - closest_shape->getTransparency()));   // Opacity of the object contributes to the color at the point
@@ -214,12 +217,12 @@ void cast_ray(Ray& ray, Color& color, float incoming_refractive_index, uint32_t 
                     dir_perpendicular_to_normal*(incoming_refractive_index/outgoing_refractive_index*sin_coming_angle)).normalize();
 
                 refraction_ray = {
-                    .source = closest_intersect.hit_location,
+                    .origin = closest_intersect.hit_location,
                     .dir = refraction_dir,
                 };
 
                 // Recursion depth does not increase since we want objects behind a transparent object to contribute more
-                cast_ray(refraction_ray, color, outgoing_refractive_index, depth_count);
+                trace_ray(refraction_ray, color, outgoing_refractive_index, depth_count);
             }
         }
 
@@ -227,10 +230,10 @@ void cast_ray(Ray& ray, Color& color, float incoming_refractive_index, uint32_t 
         if (total_reflection || closest_shape->isReflective()) {
             // Calculate the reflection ray and call the function recursively
             Ray reflection_ray = {
-                .source = closest_intersect.hit_location,
+                .origin = closest_intersect.hit_location,
                 .dir = Vector3D::reflection(-ray.dir, closest_intersect.normal)
             };
-            cast_ray(reflection_ray, color, incoming_refractive_index, depth_count+1);
+            trace_ray(reflection_ray, color, incoming_refractive_index, depth_count+1);
         }
     } // If the ray does not hit to any object, then set the color to the background color
     else if (depth_count == 1) {
@@ -249,13 +252,11 @@ std::vector<Vector3D> read_cubic_bezier_data(const char* filename) {
     Vector3D vector;
 
     while (true) {
-        for (uint32_t i = 0; i < 4; i++) { 
-            for (uint32_t j = 0; j < 4; j++) {
-                if ((file >> vector.x) && (file >> vector.y) && (file >> vector.z)) {
-                    data.push_back(vector);     
-                } else {
-                    goto readCubicBezierSurfacesOutOfLoop;
-                }
+        for (uint32_t i = 0; i < 16; i++) { 
+            if ((file >> vector.x) && (file >> vector.y) && (file >> vector.z)) {
+                data.push_back(vector);     
+            } else {
+                goto readCubicBezierSurfacesOutOfLoop;
             }
         }
     }
@@ -268,17 +269,15 @@ readCubicBezierSurfacesOutOfLoop:
 // The function which renders a portion of the image
 void thread_function(uint32_t width_start, uint32_t width_end) {
     // Recursive ray tracing
+    // uint32_t image_index = (IMAGE_HEIGHT-j-1)*IMAGE_WIDTH + i;
     for (uint32_t i = width_start; i < width_end; i++) { // x axis
         for (uint32_t j = 0; j < IMAGE_HEIGHT; j++) { // y axis     
             // Generate a ray from camera to the center of the pixel
             Ray ray = camera.generate_ray((i+0.5f)/IMAGE_WIDTH, (j+0.5f)/IMAGE_HEIGHT);
             
             // Calculate the color of the pixel
-            Color color = Color("BLACK");
-            cast_ray(ray, color, SPACE_REFRACTIVE_INDEX, 1);
-            
-            // Write to buffer
-            image[(IMAGE_HEIGHT-j-1)*IMAGE_WIDTH + i] = color;
+            Color& color = image[(IMAGE_HEIGHT-j-1)*IMAGE_WIDTH + i];
+            trace_ray(ray, color, SPACE_REFRACTIVE_INDEX, 1);
         }
     }
 }
@@ -291,14 +290,14 @@ int main(int argc, char **argv) {
         bezier_vertices[i] = Matrix3x3::rotate(bezier_vertices[i], bezier_rotation_x, bezier_rotation_y, bezier_rotation_z);
         bezier_vertices[i] += bezier_position;
     }
-    bezier_surface_number = bezier_vertices.size() / 16;
+    bezier_surface_number = bezier_vertices.size() >> 4; // divide by 16
 
     for (uint32_t i = 0; i < bezier_surface_number; i++) {
         bezier_vector.push_back(
             BezierSurface(
-                bezier_vertices.data() + 16*i, 
+                bezier_vertices.data() + (i << 4), 
                 bezier_subdivision, 
-                Color("CYAN"), 
+                Color::Cyan, 
                 false, 
                 bezier_transparency, 
                 bezier_refractive_index

@@ -14,12 +14,12 @@ public:
 
     Vector3D operator + (const Vector3D& other) const;
     void operator += (const Vector3D& other);
-    Vector3D operator - () const;
+    Vector3D operator - (void) const;
     Vector3D operator - (const Vector3D& other) const;
     void operator -= (const Vector3D& other);
     Vector3D operator * (float scalar) const;
     void operator *= (float scalar);
-    Vector3D mul_scale(float scalar_x, float scalar_y, float scalar_z) const;
+    Vector3D scale(float scalar_x, float scalar_y, float scalar_z) const;
 
     float dot(const Vector3D& other) const;
     float mag(void) const;
@@ -30,12 +30,12 @@ public:
     Vector3D cross(const Vector3D& other) const;
 
     static Vector3D projection(const Vector3D& vector, const Vector3D& onto);
-    static Vector3D bisector(const Vector3D& vec1, const Vector3D& vec2);
+    static Vector3D bisector(const Vector3D& unit1, const Vector3D& unit2);
     static Vector3D reflection(const Vector3D& unit, const Vector3D& normal);
 };
 
 typedef struct {
-    Vector3D source;
+    Vector3D origin;
     Vector3D dir;
 } Ray;
 
