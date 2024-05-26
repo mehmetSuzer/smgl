@@ -2,8 +2,6 @@
 #ifndef __SPHERE_H__
 #define __SPHERE_H__
 
-#include <vector3d.h>
-#include <color.h>
 #include <shape.h>
 
 class Sphere : public Shape {

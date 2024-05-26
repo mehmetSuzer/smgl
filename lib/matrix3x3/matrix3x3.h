@@ -30,7 +30,7 @@ public:
     void swapRows(uint32_t row1, uint32_t row2);
     void swapColumns(uint32_t column1, uint32_t column2);
 
-    Vector3D cramers_rule(const Vector3D& vector) const;
+    Vector3D cramersRule(const Vector3D& vector) const;
     static Vector3D solve(Matrix3x3& matrix, Vector3D& vector);
 };
 

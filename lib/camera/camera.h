@@ -2,8 +2,6 @@
 #ifndef __CAMERA_H__
 #define __CAMERA_H__
 
-#include <assert.h>
-#include <stdint.h>
 #include <color.h>
 #include <vector3d.h>
 
@@ -25,8 +23,7 @@ public:
     Camera(const Vector3D& position_, const Vector3D& direction_, const Vector3D& up_, 
         float near_, float FOV_radian_, uint32_t width_, uint32_t height_);
         
-    // x,y must be in [0.0,1.0]
-    Ray generate_ray(float x, float y) const;
+    Ray generateRay(float x, float y) const;
 };
 
 #endif // __CAMERA_H__

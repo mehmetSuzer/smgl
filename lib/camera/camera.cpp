@@ -12,8 +12,10 @@ Camera::Camera(const Vector3D& position_, const Vector3D& direction_, const Vect
         right_per_x = right * (2.0f * screen_half_width);
         up_per_y = up_ * (2.0f * screen_half_height);
     }
-    
-Ray Camera::generate_ray(float x, float y) const {
+
+// Generates a ray for the given point on the screen 
+// x and y must be in [0.0,1.0]
+Ray Camera::generateRay(float x, float y) const {
     assert(0.0f <= x && x <= 1.0f && 0.0f <= y && y <= 1.0f);
     const Vector3D pixel_position_wrt_camera_position = lower_left + right_per_x*x + up_per_y*y;
 

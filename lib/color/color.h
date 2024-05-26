@@ -4,8 +4,6 @@
 
 #include <assert.h>
 #include <stdint.h>
-#include <string.h>
-#include <math.h>
 
 class Color {
 public:
@@ -35,6 +33,9 @@ public:
 
     Color operator * (float scalar) const;
     void operator *= (float scalar);
+
+    Color operator / (float scalar) const;
+    void operator /= (float scalar);
 
     Color operator * (const Color& other) const;
     void operator *= (const Color& other);

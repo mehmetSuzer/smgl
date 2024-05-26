@@ -5,6 +5,9 @@
 #include <assert.h>
 #include <math.h>
 
+#define smaller(x, y) ((x > y) ? y : x)
+#define greater(x, y) ((x > y) ? x : y)
+
 class Vector3D {
 public:
     float x, y, z;
@@ -19,19 +22,23 @@ public:
     void operator -= (const Vector3D& other);
     Vector3D operator * (float scalar) const;
     void operator *= (float scalar);
-    Vector3D scale(float scalar_x, float scalar_y, float scalar_z) const;
+    Vector3D operator / (float scalar) const;
+    void operator /= (float scalar);
+
+    Vector3D multiply(const Vector3D& multiplier) const;
+    Vector3D divide(const Vector3D& divisor) const;
 
     float dot(const Vector3D& other) const;
     float mag(void) const;
-    float mag_square(void) const;
+    float magSquare(void) const;
 
     void normalized(void);
     Vector3D normalize(void) const;
     Vector3D cross(const Vector3D& other) const;
 
-    void rotate_x(float radian);
-    void rotate_y(float radian);
-    void rotate_z(float radian);
+    void rotateX(float radian);
+    void rotateY(float radian);
+    void rotateZ(float radian);
     void rotate(float radian_x, float radian_y, float radian_z);
 
     static Vector3D projection(const Vector3D& vector, const Vector3D& onto);

@@ -160,7 +160,7 @@ void Matrix3x3::swapColumns(uint32_t column1, uint32_t column2) {
     xs[2][column2] = temp[2];
 }
 
-Vector3D Matrix3x3::cramers_rule(const Vector3D& vector) const {
+Vector3D Matrix3x3::cramersRule(const Vector3D& vector) const {
     const float determinant = det();
     const float x = Matrix3x3(vector, column(1), column(2)).det() / determinant;
     const float y = Matrix3x3(column(0), vector, column(2)).det() / determinant;

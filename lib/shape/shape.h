@@ -2,7 +2,6 @@
 #ifndef __SHAPE_H__
 #define __SHAPE_H__
 
-#include <assert.h>
 #include <color.h>
 #include <vector3d.h>
 

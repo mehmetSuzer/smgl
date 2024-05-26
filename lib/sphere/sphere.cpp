@@ -8,12 +8,13 @@ Sphere::Sphere(const Vector3D& center_, float radius_, const Color& color, bool 
     assert(radius_ > 0.0f);
 }
 
+// Checks whether the ray intersects the sphere and finds the intersection details
 bool Sphere::intersect(Intersect* intersect, const Ray& ray) const {
     const Vector3D center_to_origin = ray.origin - center;
     const float dot_result = center_to_origin.dot(ray.dir);
-    const float discr = 4.0f * (dot_result*dot_result - center_to_origin.mag_square() + radius*radius);
-    if (discr > 0.0f) { // the ray intersects the sphere
-        const float t = -(dot_result + sqrtf(discr) * 0.5f);
+    const float quarter_discr = dot_result*dot_result - center_to_origin.magSquare() + radius*radius;
+    if (quarter_discr > 0.0f) { // the ray intersects the sphere
+        const float t = -(dot_result + sqrtf(quarter_discr));
         if (t <= 0.0f) { // in the opposite side of the ray direction
             return false;
         }

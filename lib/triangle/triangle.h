@@ -2,10 +2,8 @@
 #ifndef __TRIANGLE_H__
 #define __TRIANGLE_H__
 
-#include <matrix3x3.h>
-#include <color.h>
-#include <vector3d.h>
 #include <shape.h>
+#include <matrix3x3.h>
 
 class Triangle : public Shape {
 private:

@@ -39,8 +39,28 @@ void Vector3D::operator *= (float scalar) {
     z *= scalar;
 }
 
-Vector3D Vector3D::scale(float scalar_x, float scalar_y, float scalar_z) const {
-    return Vector3D(x*scalar_x, y*scalar_y, z*scalar_z);
+Vector3D Vector3D::operator / (float scalar) const {
+    assert(scalar != 0.0f);
+    return Vector3D(x/scalar, y/scalar, z/scalar);
+}
+
+void Vector3D::operator /= (float scalar) {
+    assert(scalar != 0.0f);
+    x /= scalar;
+    y /= scalar;
+    z /= scalar;
+}
+
+Vector3D Vector3D::multiply(const Vector3D& multiplier) const {
+    return Vector3D(x*multiplier.x, y*multiplier.y, z*multiplier.z);
+}
+
+Vector3D Vector3D::divide(const Vector3D& divisor) const {
+    assert(divisor.x != 0.0f);
+    assert(divisor.y != 0.0f);
+    assert(divisor.z != 0.0f);
+
+    return Vector3D(x/divisor.x, y/divisor.y, z/divisor.z);
 }
 
 float Vector3D::dot(const Vector3D& other) const {
@@ -51,24 +71,18 @@ float Vector3D::mag(void) const {
     return sqrtf(x*x + y*y + z*z);
 }
 
-float Vector3D::mag_square(void) const {
+float Vector3D::magSquare(void) const {
     return x*x + y*y + z*z;
 }
 
 void Vector3D::normalized(void) {
     float magnitude = mag();
-    assert(magnitude != 0.0f);
-
-    x /= magnitude;
-    y /= magnitude;
-    z /= magnitude;
+    *this /= magnitude;
 }
 
 Vector3D Vector3D::normalize(void) const {
     float magnitude = mag();
-    assert(magnitude != 0.0f);
-
-    return Vector3D(x/magnitude ,y/magnitude ,z/magnitude);
+    return *this / magnitude;
 }
 
 Vector3D Vector3D::cross(const Vector3D& other) const {
@@ -77,7 +91,7 @@ Vector3D Vector3D::cross(const Vector3D& other) const {
                     x*other.y - y*other.x);
 }
 
-void Vector3D::rotate_x(float radian) {
+void Vector3D::rotateX(float radian) {
     if (radian != 0.0f) {
         const float cos_angle = cosf(radian);
         const float sin_angle = sinf(radian);
@@ -89,7 +103,7 @@ void Vector3D::rotate_x(float radian) {
     }
 }
 
-void Vector3D::rotate_y(float radian) {
+void Vector3D::rotateY(float radian) {
     if (radian != 0.0f) {
         const float cos_angle = cosf(radian);
         const float sin_angle = sinf(radian);
@@ -101,7 +115,7 @@ void Vector3D::rotate_y(float radian) {
     }
 }
 
-void Vector3D::rotate_z(float radian) {
+void Vector3D::rotateZ(float radian) {
     if (radian != 0.0f) {
         const float cos_angle = cosf(radian);
         const float sin_angle = sinf(radian);
@@ -114,9 +128,9 @@ void Vector3D::rotate_z(float radian) {
 }
 
 void Vector3D::rotate(float radian_x, float radian_y, float radian_z) {
-    rotate_x(radian_x);
-    rotate_y(radian_y);
-    rotate_z(radian_z);
+    rotateX(radian_x);
+    rotateY(radian_y);
+    rotateZ(radian_z);
 }
 
 Vector3D Vector3D::projection(const Vector3D& vector, const Vector3D& onto) {

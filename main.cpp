@@ -9,9 +9,6 @@
 #include <triangle.h>
 #include <bezier.h>
 
-#define smaller(x, y) ((x > y) ? y : x)
-#define greater(x, y) ((x > y) ? x : y)
-
 #define MAX_RECURSIVE_RAY_TRACING_DEPTH 4UL
 
 #define IMAGE_HEIGHT  600UL
@@ -101,7 +98,7 @@ const Camera camera = Camera(
 
 /* ----------------------------------------------------------------------*/
 
-void trace_ray(Ray& ray, Color& color, float incoming_refractive_index, uint32_t depth_count) {
+void traceRay(Ray& ray, Color& color, float incoming_refractive_index, uint32_t depth_count) {
     // If the max recursive depth is exceeded, then stop
     if (depth_count > MAX_RECURSIVE_RAY_TRACING_DEPTH) {
         return;
@@ -222,7 +219,7 @@ void trace_ray(Ray& ray, Color& color, float incoming_refractive_index, uint32_t
                 };
 
                 // Recursion depth does not increase since we want objects behind a transparent object to contribute more
-                trace_ray(refraction_ray, color, outgoing_refractive_index, depth_count);
+                traceRay(refraction_ray, color, outgoing_refractive_index, depth_count);
             }
         }
 
@@ -233,7 +230,7 @@ void trace_ray(Ray& ray, Color& color, float incoming_refractive_index, uint32_t
                 .origin = closest_intersect.hit_location,
                 .dir = Vector3D::reflection(-ray.dir, closest_intersect.normal)
             };
-            trace_ray(reflection_ray, color, incoming_refractive_index, depth_count+1);
+            traceRay(reflection_ray, color, incoming_refractive_index, depth_count+1);
         }
     } // If the ray does not hit to any object, then set the color to the background color
     else if (depth_count == 1) {
@@ -242,7 +239,7 @@ void trace_ray(Ray& ray, Color& color, float incoming_refractive_index, uint32_t
 }
 
 // Reads the cubic beziers and returns them in a vector
-std::vector<Vector3D> read_cubic_bezier_data(const char* filename) {
+std::vector<Vector3D> readCubicBezierData(const char* filename) {
     std::ifstream file(filename);
     if (!file.is_open()) {
         throw std::invalid_argument("Error opening file: " + std::string(filename));
@@ -274,18 +271,18 @@ void thread_function(uint32_t width_start, uint32_t width_end) {
             // Generate a ray from camera to the center of the pixel
             const float x = (i+0.5f) / IMAGE_WIDTH;
             const float y = (j+0.5f) / IMAGE_HEIGHT;
-            Ray ray = camera.generate_ray(x, y);
+            Ray ray = camera.generateRay(x, y);
             
             // Calculate the color of the pixel
             Color& color = image[(IMAGE_HEIGHT-j-1)*IMAGE_WIDTH + i];
-            trace_ray(ray, color, WORLD_REFRACTIVE_INDEX, 1);
+            traceRay(ray, color, WORLD_REFRACTIVE_INDEX, 1);
         }
     }
 }
 
 int main(int argc, char **argv) {
     std::cout << "Processing Bezier Curves..." << std::endl;
-    std::vector<Vector3D> bezier_vertices = read_cubic_bezier_data("data/bezier.txt");
+    std::vector<Vector3D> bezier_vertices = readCubicBezierData("data/bezier.txt");
     for (uint32_t i = 0; i < bezier_vertices.size(); i++) {
         bezier_vertices[i] *= bezier_scalar;
         bezier_vertices[i].rotate(bezier_rotation_x, bezier_rotation_y, bezier_rotation_z);
@@ -327,5 +324,6 @@ int main(int argc, char **argv) {
     std::cout << "Writing image.png ..." << std::endl;
     stbi_write_png("image.png", IMAGE_WIDTH, IMAGE_HEIGHT, 3, image, 3*IMAGE_WIDTH);
     std::cout << "Finished..." << std::endl;
+    
     return 0;
 }
