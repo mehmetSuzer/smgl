@@ -11,7 +11,7 @@ public:
 
     Vector3D();
     Vector3D(float x_, float y_, float z_);
-
+    
     Vector3D operator + (const Vector3D& other) const;
     void operator += (const Vector3D& other);
     Vector3D operator - (void) const;
@@ -28,6 +28,11 @@ public:
     void normalized(void);
     Vector3D normalize(void) const;
     Vector3D cross(const Vector3D& other) const;
+
+    void rotate_x(float radian);
+    void rotate_y(float radian);
+    void rotate_z(float radian);
+    void rotate(float radian_x, float radian_y, float radian_z);
 
     static Vector3D projection(const Vector3D& vector, const Vector3D& onto);
     static Vector3D bisector(const Vector3D& unit1, const Vector3D& unit2);

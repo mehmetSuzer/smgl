@@ -205,7 +205,7 @@ void trace_ray(Ray& ray, Color& color, float incoming_refractive_index, uint32_t
             const float normal_dot_coming_dir = closest_intersect.normal.dot(ray.dir);
             const float sin_coming_angle = sqrtf(1.0f - normal_dot_coming_dir*normal_dot_coming_dir);
             const float outgoing_refractive_index = 
-                (incoming_refractive_index == SPACE_REFRACTIVE_INDEX) ? closest_shape->getRefractiveIndex() : SPACE_REFRACTIVE_INDEX;
+                (incoming_refractive_index == WORLD_REFRACTIVE_INDEX) ? closest_shape->getRefractiveIndex() : WORLD_REFRACTIVE_INDEX;
 
             // Check whether there is a total reflection or not
             total_reflection = sin_coming_angle >= outgoing_refractive_index/incoming_refractive_index;
@@ -269,15 +269,16 @@ readCubicBezierSurfacesOutOfLoop:
 // The function which renders a portion of the image
 void thread_function(uint32_t width_start, uint32_t width_end) {
     // Recursive ray tracing
-    // uint32_t image_index = (IMAGE_HEIGHT-j-1)*IMAGE_WIDTH + i;
     for (uint32_t i = width_start; i < width_end; i++) { // x axis
         for (uint32_t j = 0; j < IMAGE_HEIGHT; j++) { // y axis     
             // Generate a ray from camera to the center of the pixel
-            Ray ray = camera.generate_ray((i+0.5f)/IMAGE_WIDTH, (j+0.5f)/IMAGE_HEIGHT);
+            const float x = (i+0.5f) / IMAGE_WIDTH;
+            const float y = (j+0.5f) / IMAGE_HEIGHT;
+            Ray ray = camera.generate_ray(x, y);
             
             // Calculate the color of the pixel
             Color& color = image[(IMAGE_HEIGHT-j-1)*IMAGE_WIDTH + i];
-            trace_ray(ray, color, SPACE_REFRACTIVE_INDEX, 1);
+            trace_ray(ray, color, WORLD_REFRACTIVE_INDEX, 1);
         }
     }
 }
@@ -287,7 +288,7 @@ int main(int argc, char **argv) {
     std::vector<Vector3D> bezier_vertices = read_cubic_bezier_data("data/bezier.txt");
     for (uint32_t i = 0; i < bezier_vertices.size(); i++) {
         bezier_vertices[i] *= bezier_scalar;
-        bezier_vertices[i] = Matrix3x3::rotate(bezier_vertices[i], bezier_rotation_x, bezier_rotation_y, bezier_rotation_z);
+        bezier_vertices[i].rotate(bezier_rotation_x, bezier_rotation_y, bezier_rotation_z);
         bezier_vertices[i] += bezier_position;
     }
     bezier_surface_number = bezier_vertices.size() >> 4; // divide by 16
@@ -312,8 +313,8 @@ int main(int argc, char **argv) {
     // Start threads
     std::vector<std::thread> threads;
     for (uint32_t i = 0; i < THREAD_NUMBER; i++) {
-        uint32_t width_start = i*WIDTH_PER_THREAD;
-        uint32_t width_end = (i+1)*WIDTH_PER_THREAD;
+        const uint32_t width_start = i * WIDTH_PER_THREAD;
+        const uint32_t width_end = width_start + WIDTH_PER_THREAD;
         threads.push_back(std::thread(thread_function, width_start, width_end));
     }
 

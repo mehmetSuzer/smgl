@@ -77,6 +77,48 @@ Vector3D Vector3D::cross(const Vector3D& other) const {
                     x*other.y - y*other.x);
 }
 
+void Vector3D::rotate_x(float radian) {
+    if (radian != 0.0f) {
+        const float cos_angle = cosf(radian);
+        const float sin_angle = sinf(radian);
+        const float new_y = y*cos_angle - z*sin_angle;
+        const float new_z = y*sin_angle + z*cos_angle;
+
+        y = new_y;
+        z = new_z;
+    }
+}
+
+void Vector3D::rotate_y(float radian) {
+    if (radian != 0.0f) {
+        const float cos_angle = cosf(radian);
+        const float sin_angle = sinf(radian);
+        const float new_x = x*cos_angle - z*sin_angle;
+        const float new_z = x*sin_angle + z*cos_angle;
+
+        x = new_x;
+        z = new_z;
+    }
+}
+
+void Vector3D::rotate_z(float radian) {
+    if (radian != 0.0f) {
+        const float cos_angle = cosf(radian);
+        const float sin_angle = sinf(radian);
+        const float new_x = x*cos_angle - y*sin_angle;
+        const float new_y = x*sin_angle + y*cos_angle;
+
+        x = new_x;
+        y = new_y;
+    }
+}
+
+void Vector3D::rotate(float radian_x, float radian_y, float radian_z) {
+    rotate_x(radian_x);
+    rotate_y(radian_y);
+    rotate_z(radian_z);
+}
+
 Vector3D Vector3D::projection(const Vector3D& vector, const Vector3D& onto) {
     return onto * (onto.dot(vector) / onto.dot(onto));
 }

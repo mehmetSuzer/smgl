@@ -11,7 +11,7 @@ public:
 
     Matrix3x3();
     Matrix3x3(const Vector3D& vector0, const Vector3D& vector1, const Vector3D& vector2, bool column = true);
-    Matrix3x3(float xs[3][3]);
+    Matrix3x3(const float* xs);
 
     Matrix3x3 operator + (const Matrix3x3& other) const;
     Matrix3x3 operator - (const Matrix3x3& other) const;
@@ -26,13 +26,12 @@ public:
 
     Vector3D column(uint32_t column) const;
     Vector3D row(uint32_t row) const;
+
+    void swapRows(uint32_t row1, uint32_t row2);
+    void swapColumns(uint32_t column1, uint32_t column2);
+
     Vector3D cramers_rule(const Vector3D& vector) const;
-
-    static Vector3D rotate_x(const Vector3D& vector, float radian);
-    static Vector3D rotate_y(const Vector3D& vector, float radian);
-    static Vector3D rotate_z(const Vector3D& vector, float radian);
-
-    static Vector3D rotate(const Vector3D& vector, float radian_x, float radian_y, float radian_z);
+    static Vector3D solve(Matrix3x3& matrix, Vector3D& vector);
 };
 
 

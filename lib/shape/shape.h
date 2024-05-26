@@ -19,7 +19,7 @@
 #define DIAMOND_REFRACTIVE_INDEX    2.417f
 
 // Refractive index of the rendered world
-#define SPACE_REFRACTIVE_INDEX VACUUM_REFRACTIVE_INDEX
+#define WORLD_REFRACTIVE_INDEX VACUUM_REFRACTIVE_INDEX
 
 typedef struct {
     float t;
@@ -38,7 +38,7 @@ public:
     Shape(const Color& color_, bool reflect_, float transparency_, float refractive_index_) 
         : color(color_), reflect(reflect_), transparency(transparency_), refractive_index(refractive_index_) {
         assert(0.0f <= transparency_ && transparency_ < 1.0f);
-        assert(refractive_index_ >= 1.0f);
+        assert(refractive_index_ >= VACUUM_REFRACTIVE_INDEX);
     }
 
     float getTransparency(void) const {
