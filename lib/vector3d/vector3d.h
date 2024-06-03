@@ -12,6 +12,13 @@ class Vector3D {
 public:
     float x, y, z;
 
+    static const Vector3D left;
+    static const Vector3D right;
+    static const Vector3D down;
+    static const Vector3D up;
+    static const Vector3D backward;
+    static const Vector3D forward;
+
     Vector3D();
     Vector3D(float x_, float y_, float z_);
     

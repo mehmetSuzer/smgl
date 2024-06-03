@@ -144,3 +144,10 @@ Vector3D Vector3D::bisector(const Vector3D& unit1, const Vector3D& unit2) {
 Vector3D Vector3D::reflection(const Vector3D& unit, const Vector3D& unit_normal) {
     return unit_normal * 2.0f * unit_normal.dot(unit) - unit;
 }
+
+const Vector3D Vector3D::left = Vector3D(-1.0f, 0.0f, 0.0f);
+const Vector3D Vector3D::right = Vector3D(1.0f, 0.0f, 0.0f);
+const Vector3D Vector3D::down = Vector3D(0.0f, -1.0f, 0.0f);
+const Vector3D Vector3D::up = Vector3D(0.0f, 1.0f, 0.0f);
+const Vector3D Vector3D::backward = Vector3D(0.0f, 0.0f, -1.0f);
+const Vector3D Vector3D::forward = Vector3D(0.0f, 0.0f, 1.0f);

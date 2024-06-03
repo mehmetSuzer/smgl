@@ -1,11 +1,11 @@
 
 #include "bezier.h"
 
-BezierSurface::BezierSurface() : Shape(Color::Black, false, true, VACUUM_REFRACTIVE_INDEX), subdivision(4) {}
+BezierSurface::BezierSurface() : Shape(Color::Black, false, 0.0f, VACUUM_REFRACTIVE_INDEX), subdivision(4) {}
 
 BezierSurface::BezierSurface(Vector3D* controls, uint32_t subdivision_, const Color& color, bool reflect, float transparency, float refractive_index) 
     : Shape(color, reflect, transparency, refractive_index), subdivision(subdivision_) {
-    findAABB(controls);
+    findBoundingVolume(controls);
 
     const uint32_t vertex_number = (subdivision+1) * (subdivision+1);
     std::vector<Vector3D> vertices(vertex_number);
@@ -63,7 +63,10 @@ Vector3D BezierSurface::getPoint(const Vector3D* controls, float u, float v) con
 }
 
 // Finds the min and max points of the Axis Aligned Bouding Box of the surface
-void BezierSurface::findAABB(const Vector3D* controls) {
+void BezierSurface::findBoundingVolume(const Vector3D* controls) {
+    Vector3D minPoint = Vector3D(INFINITY, INFINITY, INFINITY);
+    Vector3D maxPoint = Vector3D(-INFINITY, -INFINITY, -INFINITY);
+
     for (uint32_t i = 0; i < 16; i++) {
         if (controls[i].x < minPoint.x) {
             minPoint.x = controls[i].x;
@@ -83,42 +86,14 @@ void BezierSurface::findAABB(const Vector3D* controls) {
             maxPoint.z = controls[i].z;
         }
     }
-}
 
-// Checks whether the ray intersects the AABB
-bool BezierSurface::intersectAABB(const Ray& ray) const {
-    const Vector3D min_x_divide_dir_x = minPoint.divide(ray.dir);
-    const Vector3D max_x_divide_dir_x = maxPoint.divide(ray.dir);
-    const Vector3D origin_divide_dir_x = ray.origin.divide(ray.dir);
-
-    Vector3D t1 = min_x_divide_dir_x - origin_divide_dir_x;
-    Vector3D t2 = max_x_divide_dir_x - origin_divide_dir_x;
-
-    if (t2.x < t1.x) {
-        const float temp = t1.x;
-        t1.x = t2.x;
-        t2.x = temp;
-    }
-    if (t2.y < t1.y) {
-        const float temp = t1.y;
-        t1.y = t2.y;
-        t2.y = temp;
-    }
-    if (t2.z < t1.z) {
-        const float temp = t1.z;
-        t1.z = t2.z;
-        t2.z = temp;
-    }
-
-    const float small_t = greater(greater(t1.x, t1.y), t1.z);
-    const float great_t = smaller(smaller(t2.x, t2.y), t2.z);
-    
-    return small_t <= great_t;
+    boundingVolume.setMinPoint(minPoint);
+    boundingVolume.setMaxPoint(maxPoint);
 }
 
 // Checks whether the ray intersects the surface and finds the intersection details
 bool BezierSurface::intersect(Intersect* intersect, const Ray& ray) const {
-    if (!intersectAABB(ray)) {
+    if (!boundingVolume.intersect(NULL, ray)) {
         return false;
     }
 

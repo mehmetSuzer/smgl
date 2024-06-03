@@ -7,6 +7,7 @@
 #include <camera.h>
 #include <sphere.h>
 #include <triangle.h>
+#include <aabb.h>
 #include <bezier.h>
 
 #define MAX_RECURSIVE_RAY_TRACING_DEPTH 4UL
@@ -40,13 +41,6 @@ const uint32_t vertex_number = sizeof(vertices) / sizeof(vertices[0]);
 
 /* ----------------------------------------------------------------------*/
 
-const Sphere spheres[] = {
-    Sphere(Vector3D(-30.0f, GROUND_LEVEL + 50.0f, 200.0f), 50.0f, Color::Yellow, true, 0.0f, VACUUM_REFRACTIVE_INDEX),
-};
-const uint32_t sphere_number = sizeof(spheres) / sizeof(spheres[0]);
-
-/* ----------------------------------------------------------------------*/
-
 const Triangle triangles[] = {
     Triangle(vertices[0], vertices[1], vertices[4], Color::Cyan, true, 0.0f, VACUUM_REFRACTIVE_INDEX), // pyramid side surfaces
     Triangle(vertices[1], vertices[2], vertices[4], Color::Green, true, 0.0f, VACUUM_REFRACTIVE_INDEX),
@@ -62,24 +56,39 @@ const uint32_t triangle_number = sizeof(triangles) / sizeof(triangles[0]);
 
 /* ----------------------------------------------------------------------*/
 
+const Sphere spheres[] = {
+    Sphere(Vector3D(-30.0f, GROUND_LEVEL + 50.0f, 200.0f), 50.0f, Color::Yellow, true, 0.01f, VACUUM_REFRACTIVE_INDEX),
+};
+const uint32_t sphere_number = sizeof(spheres) / sizeof(spheres[0]);
+
+/* ----------------------------------------------------------------------*/
+
+const AABB aabbs[] = {
+    // AABB(Vector3D(-35.0f, GROUND_LEVEL, 96.0f), Vector3D(-15.0f, GROUND_LEVEL + 150.0f, 100.0f), Color::Green, false, 0.00f, GLASS_REFRACTIVE_INDEX),
+    AABB(Vector3D(40.0f, GROUND_LEVEL, 100.0f), Vector3D(50.0f, GROUND_LEVEL + 50.0f, 110.0f), Color::Blue, false, 0.01f, GLASS_REFRACTIVE_INDEX),
+};
+const uint32_t aabb_number = sizeof(aabbs) / sizeof(aabbs[0]);
+
+/* ----------------------------------------------------------------------*/
+
 const float bezier_scalar = 20.0f;
 const float bezier_rotation_x = 0.0f;
 const float bezier_rotation_y = 0.0f;
 const float bezier_rotation_z = 0.0f;
 const uint32_t bezier_subdivision = 4;
-const float bezier_transparency = 0.99f;
+const float bezier_transparency = 0.7f;
 const float bezier_refractive_index = GLASS_REFRACTIVE_INDEX;
 const Vector3D bezier_position = Vector3D(0.0f, GROUND_LEVEL + 10.0f, 140.0f);
 
 // Initialized in the main function
 std::vector<BezierSurface> bezier_vector;
 BezierSurface* bezier_surfaces;
-uint32_t bezier_surface_number;
+uint32_t bezier_surface_number = 0;
 
 /* ----------------------------------------------------------------------*/
 
 const Light lights[] = {
-    Light{Vector3D(0.0f, GROUND_LEVEL + 120.0f, 80.0f), Color::White},
+    Light{Vector3D(-40.0f, GROUND_LEVEL + 140.0f, 100.0f), Color::White},
     // Light{Vector3D(80.0f, GROUND_LEVEL + 150.0f, 250.0f), Color::Cyan},
 };
 const uint32_t light_number = sizeof(lights) / sizeof(lights[0]);
@@ -99,7 +108,7 @@ const Camera camera = Camera(
 /* ----------------------------------------------------------------------*/
 
 void traceRay(Ray& ray, Color& color, float incoming_refractive_index, uint32_t depth_count) {
-    // If the max recursive depth is exceeded, then stop
+    // If the max recursive depth is exceeded, then stop tracing
     if (depth_count > MAX_RECURSIVE_RAY_TRACING_DEPTH) {
         return;
     }
@@ -117,6 +126,14 @@ void traceRay(Ray& ray, Color& color, float incoming_refractive_index, uint32_t 
     for (i = 0; i < sphere_number; i++) {
         if (spheres[i].intersect(&intersect, ray) && intersect.t < closest_intersect.t) {
             closest_shape = (Shape*)(spheres+i);
+            closest_intersect = intersect;
+        }
+    }
+
+    // Check intersections with AABBs
+    for (i = 0; i < aabb_number; i++) {
+        if (aabbs[i].intersect(&intersect, ray) && intersect.t < closest_intersect.t) {
+            closest_shape = (Shape*)(aabbs+i);
             closest_intersect = intersect;
         }
     }
@@ -152,12 +169,19 @@ void traceRay(Ray& ray, Color& color, float incoming_refractive_index, uint32_t 
                 .origin = closest_intersect.hit_location + light_dir*epsilon,
                 .dir = light_dir,
             };
-
             float shadowing_shape_transparency = 1.0f;
+
             // Check if any sphere prevents light beams from hitting to the hit location
             for (j = 0; j < sphere_number && shadowing_shape_transparency == 1.0f; j++) {
                 if (spheres[j].intersect(NULL, light_ray)) {
                     shadowing_shape_transparency = spheres[j].getTransparency();
+                }
+            }
+
+            // Check if any AABB prevents light beams from hitting to the hit location
+            for (j = 0; j < aabb_number && shadowing_shape_transparency == 1.0f; j++) {
+                if (aabbs[j].intersect(NULL, light_ray)) {
+                    shadowing_shape_transparency = aabbs[j].getTransparency();
                 }
             }
 
@@ -324,6 +348,6 @@ int main(int argc, char **argv) {
     std::cout << "Writing image.png ..." << std::endl;
     stbi_write_png("image.png", IMAGE_WIDTH, IMAGE_HEIGHT, 3, image, 3*IMAGE_WIDTH);
     std::cout << "Finished..." << std::endl;
-    
+
     return 0;
 }

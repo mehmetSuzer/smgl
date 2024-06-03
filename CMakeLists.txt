@@ -35,15 +35,23 @@ include_directories(${LIB_DIR}/sphere)
 add_subdirectory(${LIB_DIR}/triangle)
 include_directories(${LIB_DIR}/triangle)
 
+add_subdirectory(${LIB_DIR}/aabb)
+include_directories(${LIB_DIR}/aabb)
+
 add_subdirectory(${LIB_DIR}/bezier)
 include_directories(${LIB_DIR}/bezier)
+
+add_subdirectory(${LIB_DIR}/mesh)
+include_directories(${LIB_DIR}/mesh)
 
 add_executable(${PROJECT_NAME}
     main.cpp
 )
 
 target_link_libraries(${PROJECT_NAME}
+    mesh
     bezier
+    aabb
     triangle
     sphere
     camera

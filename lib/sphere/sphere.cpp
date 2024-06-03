@@ -1,7 +1,7 @@
 
 #include "sphere.h"
 
-Sphere::Sphere(): Shape(Color::Black, false, true, VACUUM_REFRACTIVE_INDEX), radius(1.0f) {}
+Sphere::Sphere(): Shape(Color::Black, false, 0.0f, VACUUM_REFRACTIVE_INDEX), radius(1.0f) {}
 
 Sphere::Sphere(const Vector3D& center_, float radius_, const Color& color, bool reflect, float transparency, float refractive_index): 
     Shape(color, reflect, transparency, refractive_index), center(center_), radius(radius_) {
