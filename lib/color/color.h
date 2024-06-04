@@ -20,9 +20,9 @@ public:
     static const Color Magenta;
 
     static const Color Black;
-    static const Color LightGray;
-    static const Color Gray;
     static const Color DarkGray;
+    static const Color Gray;
+    static const Color LightGray;
     static const Color White;
 
     Color();

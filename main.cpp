@@ -37,63 +37,63 @@ const Vector3D vertices[] = {
     Vector3D(-1000.0f,                  GROUND_LEVEL,                  1000.0f),
     Vector3D(1000.0f,                   GROUND_LEVEL,                  1000.0f),
 };
-const uint32_t vertex_number = sizeof(vertices) / sizeof(vertices[0]);
+const uint32_t vertexNumber = sizeof(vertices) / sizeof(vertices[0]);
 
 /* ----------------------------------------------------------------------*/
 
 const bool pyramidReflect = true;
 const float pyramidTransparency = 0.0f;
 const Triangle triangles[] = {
-    // Triangle(vertices[0], vertices[1], vertices[4], Color::Cyan, pyramidReflect, pyramidTransparency, GLASS_REFRACTIVE_INDEX), // pyramid side surfaces
-    // Triangle(vertices[1], vertices[2], vertices[4], Color::Green, pyramidReflect, pyramidTransparency, GLASS_REFRACTIVE_INDEX),
-    // Triangle(vertices[2], vertices[3], vertices[4], Color::Blue, pyramidReflect, pyramidTransparency, GLASS_REFRACTIVE_INDEX),
-    // Triangle(vertices[0], vertices[3], vertices[4], Color::Red, pyramidReflect, pyramidTransparency, GLASS_REFRACTIVE_INDEX),
+    Triangle(vertices[0], vertices[1], vertices[4], Color::Cyan, pyramidReflect, pyramidTransparency, GLASS_REFRACTIVE_INDEX), // pyramid side surfaces
+    Triangle(vertices[1], vertices[2], vertices[4], Color::Green, pyramidReflect, pyramidTransparency, GLASS_REFRACTIVE_INDEX),
+    Triangle(vertices[2], vertices[3], vertices[4], Color::Blue, pyramidReflect, pyramidTransparency, GLASS_REFRACTIVE_INDEX),
+    Triangle(vertices[0], vertices[3], vertices[4], Color::Red, pyramidReflect, pyramidTransparency, GLASS_REFRACTIVE_INDEX),
 
-    // Triangle(vertices[0], vertices[1], vertices[2], Color::Magenta, pyramidReflect, pyramidTransparency, GLASS_REFRACTIVE_INDEX), // pyramid bottom surface
-    // Triangle(vertices[0], vertices[3], vertices[2], Color::Yellow, pyramidReflect, pyramidTransparency, GLASS_REFRACTIVE_INDEX),
+    Triangle(vertices[0], vertices[1], vertices[2], Color::Magenta, pyramidReflect, pyramidTransparency, GLASS_REFRACTIVE_INDEX), // pyramid bottom surface
+    Triangle(vertices[0], vertices[3], vertices[2], Color::Yellow, pyramidReflect, pyramidTransparency, GLASS_REFRACTIVE_INDEX),
 
     Triangle(vertices[5], vertices[6], vertices[7], Color::Gray, true, 0.0f, GLASS_REFRACTIVE_INDEX), // plane
 };
-const uint32_t triangle_number = sizeof(triangles) / sizeof(triangles[0]);
+const uint32_t triangleNumber = sizeof(triangles) / sizeof(triangles[0]);
 
 /* ----------------------------------------------------------------------*/
 
 const Sphere spheres[] = {
     Sphere(Vector3D(-30.0f, GROUND_LEVEL + 50.0f, 200.0f), 50.0f, Color::Yellow, true, 0.0f, GLASS_REFRACTIVE_INDEX),
 };
-const uint32_t sphere_number = sizeof(spheres) / sizeof(spheres[0]);
+const uint32_t sphereNumber = sizeof(spheres) / sizeof(spheres[0]);
 
 /* ----------------------------------------------------------------------*/
 
 const AABB aabbs[] = {
-    AABB(Vector3D(-50.0f, GROUND_LEVEL + 0.0001f, 130.0f), Vector3D(50.0f, GROUND_LEVEL + 20.0f, 140.0f), Color::Green, false, 0.0f, GLASS_REFRACTIVE_INDEX),
-    AABB(Vector3D(-30.0f, GROUND_LEVEL + 0.0001f, 100.0f), Vector3D(30.0f, GROUND_LEVEL + 50.0f, 120.0f), Color::Blue, false, 0.99f, GLASS_REFRACTIVE_INDEX),
+    AABB(Vector3D(-50.0f, GROUND_LEVEL + EPSILON4, 130.0f), Vector3D(50.0f, GROUND_LEVEL + 20.0f, 140.0f), Color::Green, false, 0.0f, GLASS_REFRACTIVE_INDEX),
+    AABB(Vector3D(-10.0f, GROUND_LEVEL + EPSILON4, 100.0f), Vector3D(30.0f, GROUND_LEVEL + 90.0f, 120.0f), Color::Blue, false, 0.8f, GLASS_REFRACTIVE_INDEX),
 };
-const uint32_t aabb_number = sizeof(aabbs) / sizeof(aabbs[0]);
+const uint32_t aabbNumber = sizeof(aabbs) / sizeof(aabbs[0]);
 
 /* ----------------------------------------------------------------------*/
 
-const float bezier_scalar = 20.0f;
-const float bezier_rotation_x = 0.0f;
-const float bezier_rotation_y = 0.0f;
-const float bezier_rotation_z = 0.0f;
-const uint32_t bezier_subdivision = 4;
-const float bezier_transparency = 0.7f;
-const float bezier_refractive_index = GLASS_REFRACTIVE_INDEX;
-const Vector3D bezier_position = Vector3D(0.0f, GROUND_LEVEL + 10.0f, 140.0f);
+const float bezierScalar = 20.0f;
+const float bezierRadianX = 0.0f;
+const float bezierRadianY = 0.0f;
+const float bezierRadianZ = 0.0f;
+const uint32_t bezierSubdivision = 4;
+const float bezierTransparency = 0.7f;
+const float bezierRefractiveIndex = GLASS_REFRACTIVE_INDEX;
+const Vector3D bezierPosition = Vector3D(0.0f, GROUND_LEVEL + 10.0f, 140.0f);
 
 // Initialized in the main function
-std::vector<BezierSurface> bezier_vector;
-BezierSurface* bezier_surfaces;
-uint32_t bezier_surface_number = 0;
+std::vector<BezierSurface> bezierVector;
+BezierSurface* bezierSurfaces;
+uint32_t bezierSurfaceNumber = 0;
 
 /* ----------------------------------------------------------------------*/
 
 const Light lights[] = {
-    Light{Vector3D(0.0f, GROUND_LEVEL + 70.0f, 0.0f), Color::White},
+    Light{Vector3D(-60.0f, GROUND_LEVEL + 100.0f, 70.0f), Color::White},
     // Light{Vector3D(80.0f, GROUND_LEVEL + 150.0f, 250.0f), Color::Cyan},
 };
-const uint32_t light_number = sizeof(lights) / sizeof(lights[0]);
+const uint32_t lightNumber = sizeof(lights) / sizeof(lights[0]);
 
 /* ----------------------------------------------------------------------*/
 
@@ -110,154 +110,154 @@ const Camera camera = Camera(
 
 /* ----------------------------------------------------------------------*/
 
-void traceRay(Ray& ray, Color& color, float incoming_refractive_index, uint32_t depth_count) {
+// Recursive ray tracers that supports reflection and refraction
+void traceRay(Ray& ray, Color& color, float incomingRefractiveIndex, uint32_t depthCount) {
     // If the max recursive depth is exceeded, then stop tracing
-    if (depth_count > MAX_RECURSIVE_RAY_TRACING_DEPTH) {
+    if (depthCount > MAX_RECURSIVE_RAY_TRACING_DEPTH) {
         return;
     }
 
     // Avoid floating point errors
-    static const float epsilon = 0.01f;
-    ray.origin += ray.dir * epsilon;
+    ray.origin += ray.dir * EPSILON3;
 
     uint32_t i, j;
     Intersect intersect;
-    Intersect closest_intersect = {.t = INFINITY};
-    Shape* closest_shape = NULL;
+    Intersect closestIntersect = {.t = INFINITY};
+    Shape* closestShape = NULL;
 
     // Check intersections with spheres
-    for (i = 0; i < sphere_number; i++) {
-        if (spheres[i].intersect(&intersect, ray, camera.getFar()) && intersect.t < closest_intersect.t) {
-            closest_shape = (Shape*)(spheres+i);
-            closest_intersect = intersect;
+    for (i = 0; i < sphereNumber; i++) {
+        if (spheres[i].intersect(&intersect, ray, camera.getFar()) && intersect.t < closestIntersect.t) {
+            closestShape = (Shape*)(spheres+i);
+            closestIntersect = intersect;
         }
     }
 
     // Check intersections with AABBs
-    for (i = 0; i < aabb_number; i++) {
-        if (aabbs[i].intersect(&intersect, ray, camera.getFar()) && intersect.t < closest_intersect.t) {
-            closest_shape = (Shape*)(aabbs+i);
-            closest_intersect = intersect;
+    for (i = 0; i < aabbNumber; i++) {
+        if (aabbs[i].intersect(&intersect, ray, camera.getFar()) && intersect.t < closestIntersect.t) {
+            closestShape = (Shape*)(aabbs+i);
+            closestIntersect = intersect;
         }
     }
 
     // Check intersections with triangles
-    for (i = 0; i < triangle_number; i++) {
-        if (triangles[i].intersect(&intersect, ray, camera.getFar()) && intersect.t < closest_intersect.t) {
-            closest_shape = (Shape*)(triangles+i);
-            closest_intersect = intersect;
+    for (i = 0; i < triangleNumber; i++) {
+        if (triangles[i].intersect(&intersect, ray, camera.getFar()) && intersect.t < closestIntersect.t) {
+            closestShape = (Shape*)(triangles+i);
+            closestIntersect = intersect;
         }
     }
 
     // Check intersections with bezier surfaces
-    for (i = 0; i < bezier_surface_number; i++) {
-        if (bezier_surfaces[i].intersect(&intersect, ray, camera.getFar()) && intersect.t < closest_intersect.t) {
-            closest_shape = (Shape*)(bezier_surfaces+i);
-            closest_intersect = intersect;
+    for (i = 0; i < bezierSurfaceNumber; i++) {
+        if (bezierSurfaces[i].intersect(&intersect, ray, camera.getFar()) && intersect.t < closestIntersect.t) {
+            closestShape = (Shape*)(bezierSurfaces+i);
+            closestIntersect = intersect;
         }
     }
 
     // Check if the ray hits to an object
-    if (closest_shape != NULL) {
+    if (closestShape != NULL) {
         // Add the ambient lighting once
-        if (depth_count == 1) {
+        if (depthCount == 1) {
             color += AMBIENT_COLOR * AMBIENT_COEF;
         }
 
-        for (i = 0; i < light_number; i++) {
+        for (i = 0; i < lightNumber; i++) {
             // Generate the light ray pointing from the hit location to the light source
-            const Vector3D light_vector = lights[i].position - closest_intersect.hit_location;
-            const float lightDistance = light_vector.mag();
-            const Vector3D light_dir = light_vector.normalize();
-            const Ray light_ray = {
-                .origin = closest_intersect.hit_location + closest_intersect.normal * epsilon,
-                .dir = light_dir,
+            const Vector3D lightVector = lights[i].position - closestIntersect.hitLocation;
+            const float lightDistance = lightVector.mag();
+            const Vector3D lightDir = lightVector.normalize();
+            const Ray lightRay = {
+                .origin = closestIntersect.hitLocation + closestIntersect.normal * EPSILON3,
+                .dir = lightDir,
             };
-            float shadowing_shape_transparency = 1.0f;
+            float shadowingShapeTransparency = 1.0f;
 
             // Check if any sphere prevents light beams from hitting to the hit location
-            for (j = 0; j < sphere_number && shadowing_shape_transparency == 1.0f; j++) {
-                if (spheres[j].intersect(NULL, light_ray, lightDistance)) {
-                    shadowing_shape_transparency = spheres[j].getTransparency();
+            for (j = 0; j < sphereNumber && shadowingShapeTransparency == 1.0f; j++) {
+                if (spheres[j].intersect(NULL, lightRay, lightDistance)) {
+                    shadowingShapeTransparency = spheres[j].getTransparency();
                 }
             }
 
             // Check if any AABB prevents light beams from hitting to the hit location
-            for (j = 0; j < aabb_number && shadowing_shape_transparency == 1.0f; j++) {
-                if (aabbs[j].intersect(NULL, light_ray, lightDistance)) {
-                    shadowing_shape_transparency = aabbs[j].getTransparency();
+            for (j = 0; j < aabbNumber && shadowingShapeTransparency == 1.0f; j++) {
+                if (aabbs[j].intersect(NULL, lightRay, lightDistance)) {
+                    shadowingShapeTransparency = aabbs[j].getTransparency();
                 }
             }
 
             // Check if any triangle prevents light beams from hitting to the hit location
-            for (j = 0; j < triangle_number && shadowing_shape_transparency == 1.0f; j++) {
-                if (triangles[j].intersect(NULL, light_ray, lightDistance)) {
-                    shadowing_shape_transparency = triangles[j].getTransparency();
+            for (j = 0; j < triangleNumber && shadowingShapeTransparency == 1.0f; j++) {
+                if (triangles[j].intersect(NULL, lightRay, lightDistance)) {
+                    shadowingShapeTransparency = triangles[j].getTransparency();
                 }
             }
 
             // Check if any bezier surface prevents light beams from hitting to the hit location
-            for (j = 0; j < bezier_surface_number && shadowing_shape_transparency == 1.0f; j++) {
-                if (bezier_surfaces[j].intersect(NULL, light_ray, lightDistance)) {
-                    shadowing_shape_transparency = bezier_surfaces[j].getTransparency();
+            for (j = 0; j < bezierSurfaceNumber && shadowingShapeTransparency == 1.0f; j++) {
+                if (bezierSurfaces[j].intersect(NULL, lightRay, lightDistance)) {
+                    shadowingShapeTransparency = bezierSurfaces[j].getTransparency();
                 }
             }
 
             // Calculate diffuse and specular light intensity
-            const float diffuse = DIFFUSE_COEF * greater(light_dir.dot(closest_intersect.normal), 0.0f);
-            const Vector3D bisector = Vector3D::bisector(light_dir, -ray.dir);
-            const float specular = SPECULAR_COEF * powf(greater(bisector.dot(closest_intersect.normal), 0.0f), SPECULAR_POW);
+            const float diffuse = DIFFUSE_COEF * greater(lightDir.dot(closestIntersect.normal), 0.0f);
+            const Vector3D bisector = Vector3D::bisector(lightDir, -ray.dir);
+            const float specular = SPECULAR_COEF * powf(greater(bisector.dot(closestIntersect.normal), 0.0f), SPECULAR_POW);
             
             // Calculate the intensity
 	        const float a = 0.00002f;
 	        const float b = 0.00001f;
-	        const float inverse_intensity = (a * lightDistance + b) * lightDistance + 1.0f; // inverse_intensity = 1.0f / intensity
+	        const float inverseIntensity = (a * lightDistance + b) * lightDistance + 1.0f; // inverseIntensity = 1.0f / intensity
 
             // Calculate the color that will be added
-            const Color added_color = closest_shape->getColor() * lights[i].color 
+            const Color addedColor = closestShape->getColor() * lights[i].color 
                 * ((diffuse + specular) 
-                / inverse_intensity                             // Intensity of the light at the point
-                / (depth_count * depth_count)                   // As the recursion depth increases, the effect of reflections get smaller
-                * shadowing_shape_transparency                  // If an object casts shadow onto the point, use its transparency
-                * (1.0f - closest_shape->getTransparency()));   // Opacity of the object contributes to the color at the point
-            color += added_color;
+                / inverseIntensity                              // Intensity of the light at the point
+                / (depthCount * depthCount)                     // As the recursion depth increases, the effect of reflections get smaller
+                * shadowingShapeTransparency                    // If an object casts shadow onto the point, use its transparency
+                * (1.0f - closestShape->getTransparency()));    // Opacity of the object contributes to the color at the point
+            color += addedColor;
         }
 
-        bool total_reflection = false;
-        if (closest_shape->getTransparency() != 0.0f) {
-            const float normal_dot_coming_dir = closest_intersect.normal.dot(ray.dir);
-            const float sin_coming_angle = sqrtf(1.0f - normal_dot_coming_dir*normal_dot_coming_dir);
-            const float outgoing_refractive_index = 
-                (incoming_refractive_index == WORLD_REFRACTIVE_INDEX) ? closest_shape->getRefractiveIndex() : WORLD_REFRACTIVE_INDEX;
+        bool totalReflection = false;
+        if (closestShape->getTransparency() != 0.0f) {
+            const float normalDotComingRayDir = closestIntersect.normal.dot(ray.dir);
+            const float sinComingAngle = sqrtf(1.0f - normalDotComingRayDir*normalDotComingRayDir);
+            const float outgoingRefractiveIndex = 
+                (incomingRefractiveIndex == WORLD_REFRACTIVE_INDEX) ? closestShape->getRefractiveIndex() : WORLD_REFRACTIVE_INDEX;
 
             // Check whether there is a total reflection or not
-            total_reflection = sin_coming_angle >= outgoing_refractive_index/incoming_refractive_index;
+            totalReflection = sinComingAngle >= outgoingRefractiveIndex/incomingRefractiveIndex;
 
             // If there is no total reflection, then calculate the ray and call the function recursively
-            if (!total_reflection) {
-                Ray refraction_ray;
-                const Vector3D perpendicular_dir_component = ray.dir - closest_intersect.normal * normal_dot_coming_dir;
-                if (perpendicular_dir_component.mag() != 0.0f) {
-                    refraction_ray.dir = (-closest_intersect.normal + perpendicular_dir_component.normalize() 
-                        * (incoming_refractive_index / outgoing_refractive_index * sin_coming_angle)).normalize();
+            if (!totalReflection) {
+                Ray refractionRay;
+                const Vector3D RayDirPerpendicularComponent = ray.dir - closestIntersect.normal * normalDotComingRayDir;
+                if (RayDirPerpendicularComponent.mag() != 0.0f) {
+                    refractionRay.dir = (-closestIntersect.normal + RayDirPerpendicularComponent.normalize() 
+                        * (incomingRefractiveIndex / outgoingRefractiveIndex * sinComingAngle)).normalize();
                 } else {
-                    refraction_ray.dir = -closest_intersect.normal;
+                    refractionRay.dir = -closestIntersect.normal;
                 }
-                refraction_ray.origin = closest_intersect.hit_location + refraction_ray.dir * epsilon;
+                refractionRay.origin = closestIntersect.hitLocation + refractionRay.dir * EPSILON3;
 
                 // Recursion depth does not increase since we want objects behind a transparent object to contribute more
-                traceRay(refraction_ray, color, outgoing_refractive_index, depth_count);
+                traceRay(refractionRay, color, outgoingRefractiveIndex, depthCount);
             }
         }
 
         // If a total reflection occurs, or the surface is reflective
-        if (total_reflection || closest_shape->isReflective()) {
+        if (totalReflection || closestShape->isReflective()) {
             // Calculate the reflection ray and call the function recursively
-            Ray reflection_ray = {
-                .origin = closest_intersect.hit_location,
-                .dir = Vector3D::reflection(-ray.dir, closest_intersect.normal)
+            Ray reflectionRay = {
+                .origin = closestIntersect.hitLocation,
+                .dir = Vector3D::reflection(-ray.dir, closestIntersect.normal)
             };
-            traceRay(reflection_ray, color, incoming_refractive_index, depth_count+1);
+            traceRay(reflectionRay, color, incomingRefractiveIndex, depthCount+1);
         }
     }
 }
@@ -288,9 +288,8 @@ readCubicBezierSurfacesOutOfLoop:
 }
 
 // The function which renders a portion of the image
-void thread_function(uint32_t width_start, uint32_t width_end) {
-    // Recursive ray tracing
-    for (uint32_t i = width_start; i < width_end; i++) { // x axis
+void threadFunction(uint32_t widthStart, uint32_t widthEnd) {
+    for (uint32_t i = widthStart; i < widthEnd; i++) { // x axis
         for (uint32_t j = 0; j < IMAGE_HEIGHT; j++) { // y axis     
             // Generate a ray from camera to the center of the pixel
             const float x = (i+0.5f) / IMAGE_WIDTH;
@@ -305,37 +304,37 @@ void thread_function(uint32_t width_start, uint32_t width_end) {
 }
 
 int main(int argc, char **argv) {
-    std::vector<Vector3D> bezier_vertices = readCubicBezierData("data/bezier.txt");
-    for (uint32_t i = 0; i < bezier_vertices.size(); i++) {
-        bezier_vertices[i] *= bezier_scalar;
-        bezier_vertices[i].rotate(bezier_rotation_x, bezier_rotation_y, bezier_rotation_z);
-        bezier_vertices[i] += bezier_position;
+    std::vector<Vector3D> bezierVertices = readCubicBezierData("data/bezier.txt");
+    for (uint32_t i = 0; i < bezierVertices.size(); i++) {
+        bezierVertices[i] *= bezierScalar;
+        bezierVertices[i].rotate(bezierRadianX, bezierRadianY, bezierRadianZ);
+        bezierVertices[i] += bezierPosition;
     }
-    // bezier_surface_number = bezier_vertices.size() >> 4; // divide by 16
+    // bezierSurfaceNumber = bezierVertices.size() >> 4; // divide by 16
 
-    for (uint32_t i = 0; i < bezier_surface_number; i++) {
-        bezier_vector.push_back(
+    for (uint32_t i = 0; i < bezierSurfaceNumber; i++) {
+        bezierVector.push_back(
             BezierSurface(
-                bezier_vertices.data() + (i << 4), 
-                bezier_subdivision, 
+                bezierVertices.data() + (i << 4), 
+                bezierSubdivision, 
                 Color::Cyan, 
                 false, 
-                bezier_transparency, 
-                bezier_refractive_index
+                bezierTransparency, 
+                bezierRefractiveIndex
             )
         );
     }
-    bezier_surfaces = bezier_vector.data();
-    bezier_vertices.clear();
+    bezierSurfaces = bezierVector.data();
+    bezierVertices.clear();
 
     std::cout << "Rendering..." << std::endl;
 
     // Start threads
     std::vector<std::thread> threads;
     for (uint32_t i = 0; i < THREAD_NUMBER; i++) {
-        const uint32_t width_start = i * WIDTH_PER_THREAD;
-        const uint32_t width_end = width_start + WIDTH_PER_THREAD;
-        threads.push_back(std::thread(thread_function, width_start, width_end));
+        const uint32_t widthStart = i * WIDTH_PER_THREAD;
+        const uint32_t widthEnd = widthStart + WIDTH_PER_THREAD;
+        threads.push_back(std::thread(threadFunction, widthStart, widthEnd));
     }
 
     // Wait until all threads join

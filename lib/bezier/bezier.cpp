@@ -3,12 +3,12 @@
 
 BezierSurface::BezierSurface() : Shape(Color::Black, false, 0.0f, VACUUM_REFRACTIVE_INDEX), subdivision(4) {}
 
-BezierSurface::BezierSurface(Vector3D* controls, uint32_t subdivision_, const Color& color, bool reflect, float transparency, float refractive_index) 
-    : Shape(color, reflect, transparency, refractive_index), subdivision(subdivision_) {
+BezierSurface::BezierSurface(Vector3D* controls, uint32_t subdivision_, const Color& color, bool reflect, float transparency, float refractiveIndex) 
+    : Shape(color, reflect, transparency, refractiveIndex), subdivision(subdivision_) {
     findBoundingVolume(controls);
 
-    const uint32_t vertex_number = (subdivision+1) * (subdivision+1);
-    std::vector<Vector3D> vertices(vertex_number);
+    const uint32_t vertexNumber = (subdivision+1) * (subdivision+1);
+    std::vector<Vector3D> vertices(vertexNumber);
     uint32_t index = 0;
 
     // Sample (subdivision X subdivision) many surfaces
@@ -28,34 +28,34 @@ BezierSurface::BezierSurface(Vector3D* controls, uint32_t subdivision_, const Co
             Vector3D vertex3 = vertices[(i+1)*(subdivision+1)+j];
             Vector3D vertex4 = vertices[(i+1)*(subdivision+1)+j+1];
 
-            triangles.push_back(Triangle(vertex3, vertex2, vertex1, color, reflect, transparency, refractive_index));
-            triangles.push_back(Triangle(vertex3, vertex4, vertex2, color, reflect, transparency, refractive_index));
+            triangles.push_back(Triangle(vertex3, vertex2, vertex1, color, reflect, transparency, refractiveIndex));
+            triangles.push_back(Triangle(vertex3, vertex4, vertex2, color, reflect, transparency, refractiveIndex));
         }
     }
 }
 
 // Calculates B(u) and B(v) for surface function
-void BezierSurface::generateControlPointScalars(float* x_vector, float x) const {
+void BezierSurface::generateControlPointScalars(float* xVector, float x) const {
     assert(0.0f <= x && x <= 1.0f);
-    const float one_minus_x = 1.0f - x;
+    const float oneMinusX = 1.0f - x;
 
-    x_vector[0] = one_minus_x * one_minus_x * one_minus_x;
-    x_vector[1] = 3.0f * one_minus_x * one_minus_x * x;
-    x_vector[2] = 3.0f * one_minus_x * x * x;
-    x_vector[3] = x * x * x;
+    xVector[0] = oneMinusX * oneMinusX * oneMinusX;
+    xVector[1] = 3.0f * oneMinusX * oneMinusX * x;
+    xVector[2] = 3.0f * oneMinusX * x * x;
+    xVector[3] = x * x * x;
 }
 
 // Returns the surface point for given control points, u, and v
 Vector3D BezierSurface::getPoint(const Vector3D* controls, float u, float v) const {
-    float u_vector[4];
-    float v_vector[4];
-    generateControlPointScalars(u_vector, u);
-    generateControlPointScalars(v_vector, v);
+    float uVector[4];
+    float vVector[4];
+    generateControlPointScalars(uVector, u);
+    generateControlPointScalars(vVector, v);
 
     Vector3D point = Vector3D();
     for (uint32_t i = 0; i < 4; i++) {
         for (uint32_t j = 0; j < 4; j++) {
-            point += controls[(i<<2)+j] * (u_vector[i] * v_vector[j]);
+            point += controls[(i<<2)+j] * (uVector[i] * vVector[j]);
         }
     }
 

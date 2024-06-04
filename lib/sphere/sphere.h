@@ -11,7 +11,7 @@ private:
 
 public:
     Sphere();
-    Sphere(const Vector3D& center_, float radius_, const Color& color, bool reflect, float transparency, float refractive_index);
+    Sphere(const Vector3D& center_, float radius_, const Color& color, bool reflect, float transparency, float refractiveIndex);
 
     bool intersect(Intersect* intersect, const Ray& ray, float far) const override;
 };

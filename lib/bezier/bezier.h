@@ -12,13 +12,13 @@ private:
     std::vector<Triangle> triangles;
     AABB boundingVolume;    
 
-    void generateControlPointScalars(float* x_vector, float x) const;
+    void generateControlPointScalars(float* xVector, float x) const;
     Vector3D getPoint(const Vector3D* controls, float u, float v) const;
     void findBoundingVolume(const Vector3D* controls);
 
 public:
     BezierSurface();
-    BezierSurface(Vector3D* controls, uint32_t subdivision_, const Color& color, bool reflect, float transparency, float refractive_index);
+    BezierSurface(Vector3D* controls, uint32_t subdivision_, const Color& color, bool reflect, float transparency, float refractiveIndex);
 
     bool intersect(Intersect* intersect, const Ray& ray, float far) const override;
 };

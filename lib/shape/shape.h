@@ -20,12 +20,16 @@
 // Refractive index of the rendered world
 #define WORLD_REFRACTIVE_INDEX VACUUM_REFRACTIVE_INDEX
 
-// Use epsilon to avoid floating point rounding errors
-#define EPSILON 0.0001f
+// Use epsilons to avoid floating point rounding errors
+#define EPSILON1 0.1f
+#define EPSILON2 0.01f
+#define EPSILON3 0.001f
+#define EPSILON4 0.0001f
+#define EPSILON5 0.00001f
 
 typedef struct {
     float t;
-    Vector3D hit_location;
+    Vector3D hitLocation;
     Vector3D normal;
 } Intersect;
 
@@ -34,13 +38,13 @@ private:
     const Color& color;
     const bool reflect;
     const float transparency;
-    const float refractive_index;
+    const float refractiveIndex;
 
 public:
-    Shape(const Color& color_, bool reflect_, float transparency_, float refractive_index_) 
-        : color(color_), reflect(reflect_), transparency(transparency_), refractive_index(refractive_index_) {
+    Shape(const Color& color_, bool reflect_, float transparency_, float refractiveIndex_) 
+        : color(color_), reflect(reflect_), transparency(transparency_), refractiveIndex(refractiveIndex_) {
         assert(0.0f <= transparency_ && transparency_ < 1.0f);
-        assert(refractive_index_ >= VACUUM_REFRACTIVE_INDEX);
+        assert(refractiveIndex_ >= VACUUM_REFRACTIVE_INDEX);
     }
 
     float getTransparency(void) const {
@@ -52,7 +56,7 @@ public:
     }
 
     float getRefractiveIndex(void) const {
-        return refractive_index;
+        return refractiveIndex;
     }
 
     const Color& getColor(void) const {

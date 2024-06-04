@@ -38,49 +38,49 @@ Matrix3x3::Matrix3x3(const float* xs) {
 }
 
 Matrix3x3 Matrix3x3::operator + (const Matrix3x3& other) const {
-    float result_xs[3][3]; 
+    float resultXS[3][3]; 
     for (uint32_t i = 0; i < 3; i++) {
-        result_xs[i][0] = xs[i][0] + other.xs[i][0];
-        result_xs[i][1] = xs[i][1] + other.xs[i][1];
-        result_xs[i][2] = xs[i][2] + other.xs[i][2];
+        resultXS[i][0] = xs[i][0] + other.xs[i][0];
+        resultXS[i][1] = xs[i][1] + other.xs[i][1];
+        resultXS[i][2] = xs[i][2] + other.xs[i][2];
     }
 
-    return Matrix3x3((float *)result_xs);
+    return Matrix3x3((float *)resultXS);
 }
 
 Matrix3x3 Matrix3x3::operator - (const Matrix3x3& other) const {
-    float result_xs[3][3]; 
+    float resultXS[3][3]; 
     for (uint32_t i = 0; i < 3; i++) {
-        result_xs[i][0] = xs[i][0] - other.xs[i][0];
-        result_xs[i][1] = xs[i][1] - other.xs[i][1];
-        result_xs[i][2] = xs[i][2] - other.xs[i][2];
+        resultXS[i][0] = xs[i][0] - other.xs[i][0];
+        resultXS[i][1] = xs[i][1] - other.xs[i][1];
+        resultXS[i][2] = xs[i][2] - other.xs[i][2];
     }
 
-    return Matrix3x3((float *)result_xs);
+    return Matrix3x3((float *)resultXS);
 }
 
 Matrix3x3 Matrix3x3::operator * (float scalar) const {
-    float result_xs[3][3]; 
+    float resultXS[3][3]; 
     for (uint32_t i = 0; i < 3; i++) {
-        result_xs[i][0] = xs[i][0] * scalar;
-        result_xs[i][1] = xs[i][1] * scalar;
-        result_xs[i][2] = xs[i][2] * scalar;
+        resultXS[i][0] = xs[i][0] * scalar;
+        resultXS[i][1] = xs[i][1] * scalar;
+        resultXS[i][2] = xs[i][2] * scalar;
     }
 
-    return Matrix3x3((float *)result_xs);
+    return Matrix3x3((float *)resultXS);
 }
 
 Matrix3x3 Matrix3x3::operator * (const Matrix3x3& matrix) const {
-    float result_xs[3][3]; 
+    float resultXS[3][3]; 
     for (uint32_t i = 0; i < 3; i++) {
         for (uint32_t j = 0; j < 3; j++) {
-            result_xs[i][j] = xs[i][0] * matrix.xs[0][j]
+            resultXS[i][j] = xs[i][0] * matrix.xs[0][j]
                             + xs[i][1] * matrix.xs[1][j]
                             + xs[i][2] * matrix.xs[2][j];
         }
     }
 
-    return Matrix3x3((float *)result_xs);
+    return Matrix3x3((float *)resultXS);
 }
 
 Vector3D Matrix3x3::operator * (const Vector3D& vec) const {
@@ -92,14 +92,14 @@ Vector3D Matrix3x3::operator * (const Vector3D& vec) const {
 }
 
 Matrix3x3 Matrix3x3::transpose(void) const {
-    float result_xs[3][3];
+    float resultXS[3][3];
     for (uint32_t i = 0; i < 3; i++) {
-        result_xs[i][0] = xs[0][i];
-        result_xs[i][1] = xs[1][i];
-        result_xs[i][2] = xs[2][i];
+        resultXS[i][0] = xs[0][i];
+        resultXS[i][1] = xs[1][i];
+        resultXS[i][2] = xs[2][i];
     }
 
-    return Matrix3x3((float *)result_xs);
+    return Matrix3x3((float *)resultXS);
 }
 
 float Matrix3x3::det(void) const {

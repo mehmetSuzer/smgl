@@ -46,11 +46,11 @@ public:
     void rotateX(float radian);
     void rotateY(float radian);
     void rotateZ(float radian);
-    void rotate(float radian_x, float radian_y, float radian_z);
+    void rotate(float radianX, float radianY, float radianZ);
 
     static Vector3D projection(const Vector3D& vector, const Vector3D& onto);
     static Vector3D bisector(const Vector3D& unit1, const Vector3D& unit2);
-    static Vector3D reflection(const Vector3D& unit, const Vector3D& normal);
+    static Vector3D reflection(const Vector3D& unit, const Vector3D& unitNormal);
 };
 
 typedef struct {

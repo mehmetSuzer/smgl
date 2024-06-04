@@ -2,16 +2,16 @@
 #include "camera.h"
 
 Camera::Camera(const Vector3D& position_, const Vector3D& direction_, const Vector3D& up_, 
-    float near_, float far_, float FOV_radian_, uint32_t width_, uint32_t height_) : 
+    float near_, float far_, float FOVRadian_, uint32_t width_, uint32_t height_) : 
     position(position_), near(near_), far(far_) {
         const Vector3D right = up_.cross(direction_);
 
-        screen_half_width = near_ * tanf(FOV_radian_ / 2.0f);
-        screen_half_height = (screen_half_width / height_) * width_;
-        lower_left = direction_*near_ - (right*screen_half_width) - (up_*screen_half_height);
+        screenHalfWidth = near_ * tanf(FOVRadian_ / 2.0f);
+        screenHalfHeight = (screenHalfWidth / height_) * width_;
+        lowerLeft = direction_*near_ - (right*screenHalfWidth) - (up_*screenHalfHeight);
 
-        right_per_x = right * (2.0f * screen_half_width);
-        up_per_y = up_ * (2.0f * screen_half_height);
+        rightPerX = right * (2.0f * screenHalfWidth);
+        upPerY = up_ * (2.0f * screenHalfHeight);
     }
 
 const Vector3D& Camera::getPosition(void) const {
@@ -30,10 +30,10 @@ float Camera::getFar(void) const {
 // x and y must be in [0.0,1.0]
 Ray Camera::generateRay(float x, float y) const {
     assert(0.0f <= x && x <= 1.0f && 0.0f <= y && y <= 1.0f);
-    const Vector3D pixel_position_wrt_camera_position = lower_left + right_per_x*x + up_per_y*y;
+    const Vector3D pixelPositionWRTCameraPosition = lowerLeft + rightPerX*x + upPerY*y;
 
     return Ray{
-        .origin = position + pixel_position_wrt_camera_position, 
-        .dir = pixel_position_wrt_camera_position.normalize(),
+        .origin = position + pixelPositionWRTCameraPosition, 
+        .dir = pixelPositionWRTCameraPosition.normalize(),
     };
 }

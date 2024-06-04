@@ -93,10 +93,10 @@ Vector3D Vector3D::cross(const Vector3D& other) const {
 
 void Vector3D::rotateX(float radian) {
     if (radian != 0.0f) {
-        const float cos_angle = cosf(radian);
-        const float sin_angle = sinf(radian);
-        const float new_y = y*cos_angle - z*sin_angle;
-        const float new_z = y*sin_angle + z*cos_angle;
+        const float cosAngle = cosf(radian);
+        const float sinAngle = sinf(radian);
+        const float new_y = y*cosAngle - z*sinAngle;
+        const float new_z = y*sinAngle + z*cosAngle;
 
         y = new_y;
         z = new_z;
@@ -105,10 +105,10 @@ void Vector3D::rotateX(float radian) {
 
 void Vector3D::rotateY(float radian) {
     if (radian != 0.0f) {
-        const float cos_angle = cosf(radian);
-        const float sin_angle = sinf(radian);
-        const float new_x = x*cos_angle - z*sin_angle;
-        const float new_z = x*sin_angle + z*cos_angle;
+        const float cosAngle = cosf(radian);
+        const float sinAngle = sinf(radian);
+        const float new_x = x*cosAngle - z*sinAngle;
+        const float new_z = x*sinAngle + z*cosAngle;
 
         x = new_x;
         z = new_z;
@@ -117,20 +117,20 @@ void Vector3D::rotateY(float radian) {
 
 void Vector3D::rotateZ(float radian) {
     if (radian != 0.0f) {
-        const float cos_angle = cosf(radian);
-        const float sin_angle = sinf(radian);
-        const float new_x = x*cos_angle - y*sin_angle;
-        const float new_y = x*sin_angle + y*cos_angle;
+        const float cosAngle = cosf(radian);
+        const float sinAngle = sinf(radian);
+        const float new_x = x*cosAngle - y*sinAngle;
+        const float new_y = x*sinAngle + y*cosAngle;
 
         x = new_x;
         y = new_y;
     }
 }
 
-void Vector3D::rotate(float radian_x, float radian_y, float radian_z) {
-    rotateX(radian_x);
-    rotateY(radian_y);
-    rotateZ(radian_z);
+void Vector3D::rotate(float radianX, float radianY, float radianZ) {
+    rotateX(radianX);
+    rotateY(radianY);
+    rotateZ(radianZ);
 }
 
 Vector3D Vector3D::projection(const Vector3D& vector, const Vector3D& onto) {
@@ -141,8 +141,8 @@ Vector3D Vector3D::bisector(const Vector3D& unit1, const Vector3D& unit2) {
     return (unit1 + unit2).normalize();
 }
 
-Vector3D Vector3D::reflection(const Vector3D& unit, const Vector3D& unit_normal) {
-    return unit_normal * 2.0f * unit_normal.dot(unit) - unit;
+Vector3D Vector3D::reflection(const Vector3D& unit, const Vector3D& unitNormal) {
+    return unitNormal * 2.0f * unitNormal.dot(unit) - unit;
 }
 
 const Vector3D Vector3D::left = Vector3D(-1.0f, 0.0f, 0.0f);
