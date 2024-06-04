@@ -17,7 +17,7 @@ public:
     void setMinPoint(const Vector3D& point);
     void setMaxPoint(const Vector3D& point);
 
-    bool intersect(Intersect* intersect, const Ray& ray) const override;
+    bool intersect(Intersect* intersect, const Ray& ray, float far) const override;
 };
 
 #endif // __AABB_H__

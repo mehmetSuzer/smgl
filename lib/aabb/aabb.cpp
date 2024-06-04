@@ -18,7 +18,7 @@ void AABB::setMaxPoint(const Vector3D& point) {
     maxPoint = point;
 }
 
-bool AABB::intersect(Intersect* intersect, const Ray& ray) const {
+bool AABB::intersect(Intersect* intersect, const Ray& ray, float far) const {
     // If the ray is perpendicular to an axis, then don't use this axis to calculate t
     const bool perpendicularToX = (ray.dir.x == 0.0f); 
     const bool perpendicularToY = (ray.dir.y == 0.0f); 
@@ -69,24 +69,37 @@ bool AABB::intersect(Intersect* intersect, const Ray& ray) const {
     const float low_t = greater(greater(t1.x, t1.y), t1.z);
     const float high_t = smaller(smaller(t2.x, t2.y), t2.z);
 
-    // Check whether the interval of solution for t is empty or not
-    if (low_t >= high_t || low_t < 0.0f) {
+    bool rayOriginIsInAABB = false;
+    float t;
+
+    if (low_t >= high_t || low_t >= far) { // If the interval for t is empty or the closer intersection is out of range
         return false;
+    } else if (low_t > 0.0f) { // The intersection occurs in the forward direction of the ray
+        t = low_t;
+    } else if (high_t <= 0.0f || high_t >= far) { // The AABB is behind the object or the intersection is out range
+        return false;
+    } else { // Origin of the ray is in the AABB
+        t = high_t;
+        rayOriginIsInAABB = true;
     }
 
     if (intersect != NULL) {
-        intersect->t = low_t;
-        intersect->hit_location = ray.origin + ray.dir * low_t;
+        intersect->t = t;
+        intersect->hit_location = ray.origin + ray.dir * t;
 
         const Vector3D minDifference = intersect->hit_location - minPoint;
         const Vector3D maxDifference = intersect->hit_location - maxPoint;
 
-        intersect->normal = (-1E-5f < minDifference.x && minDifference.x < 1E-5f) ? Vector3D::left : 
-                            (-1E-5f < minDifference.y && minDifference.y < 1E-5f) ? Vector3D::down : 
-                            (-1E-5f < minDifference.z && minDifference.z < 1E-5f) ? Vector3D::backward : 
-                            (-1E-5f < maxDifference.x && maxDifference.x < 1E-5f) ? Vector3D::right : 
-                            (-1E-5f < maxDifference.y && maxDifference.y < 1E-5f) ? Vector3D::up : 
-                                                                                    Vector3D::forward; 
+        intersect->normal = (-EPSILON < minDifference.x && minDifference.x < EPSILON) ? Vector3D::left : 
+                            (-EPSILON < minDifference.y && minDifference.y < EPSILON) ? Vector3D::down : 
+                            (-EPSILON < minDifference.z && minDifference.z < EPSILON) ? Vector3D::backward : 
+                            (-EPSILON < maxDifference.x && maxDifference.x < EPSILON) ? Vector3D::right : 
+                            (-EPSILON < maxDifference.y && maxDifference.y < EPSILON) ? Vector3D::up : 
+                                                                                        Vector3D::forward; 
+
+        if (rayOriginIsInAABB) {
+            intersect->normal *= -1.0f;
+        }
     }
     return true;
 }

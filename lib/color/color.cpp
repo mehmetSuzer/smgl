@@ -28,16 +28,16 @@ void Color::operator += (const Color& other) {
     const uint16_t result_green = green + other.green;
     const uint16_t result_blue = blue + other.blue;
 
-    red = (result_red <= 255) ? result_red : 255;
-    green = (result_green <= 255) ? result_green : 255;
-    blue = (result_blue <= 255) ? result_blue : 255;
+    red = (result_red < 255) ? result_red : 255;
+    green = (result_green < 255) ? result_green : 255;
+    blue = (result_blue < 255) ? result_blue : 255;
 }
 
 Color Color::operator * (float scalar) const {
     assert(scalar >= 0.0f);
-    uint16_t result_red = static_cast<uint16_t>(red*scalar);
-    uint16_t result_green = static_cast<uint16_t>(green*scalar);
-    uint16_t result_blue = static_cast<uint16_t>(blue*scalar);
+    uint16_t result_red = static_cast<uint16_t>(red * scalar);
+    uint16_t result_green = static_cast<uint16_t>(green * scalar);
+    uint16_t result_blue = static_cast<uint16_t>(blue * scalar);
 
     if (result_red > 255) {
         result_red = 255;
@@ -54,29 +54,29 @@ Color Color::operator * (float scalar) const {
 
 void Color::operator *= (float scalar) {
     assert(scalar >= 0.0f);
-    const uint16_t result_red = static_cast<uint16_t>(red*scalar);
-    const uint16_t result_green = static_cast<uint16_t>(green*scalar);
-    const uint16_t result_blue = static_cast<uint16_t>(blue*scalar);
+    const uint16_t result_red = static_cast<uint16_t>(red * scalar);
+    const uint16_t result_green = static_cast<uint16_t>(green * scalar);
+    const uint16_t result_blue = static_cast<uint16_t>(blue * scalar);
 
-    red = (result_red <= 255) ? result_red : 255;
-    green = (result_green <= 255) ? result_green : 255;
-    blue = (result_blue <= 255) ? result_blue : 255;
+    red = (result_red < 255) ? result_red : 255;
+    green = (result_green < 255) ? result_green : 255;
+    blue = (result_blue < 255) ? result_blue : 255;
 }
 
 Color Color::operator / (float scalar) const {
     assert(scalar > 0.0f);
-    const uint8_t result_red = static_cast<uint8_t>(red/scalar);
-    const uint8_t result_green = static_cast<uint8_t>(green/scalar);
-    const uint8_t result_blue = static_cast<uint8_t>(blue/scalar);
+    const uint8_t result_red = static_cast<uint8_t>(red / scalar);
+    const uint8_t result_green = static_cast<uint8_t>(green / scalar);
+    const uint8_t result_blue = static_cast<uint8_t>(blue / scalar);
 
     return Color(result_red, result_green, result_blue);
 }
     
 void Color::operator /= (float scalar) {
     assert(scalar > 0.0f);
-    red = static_cast<uint8_t>(red/scalar);
-    green = static_cast<uint8_t>(green/scalar);
-    blue = static_cast<uint8_t>(blue/scalar);
+    red = static_cast<uint8_t>(red / scalar);
+    green = static_cast<uint8_t>(green / scalar);
+    blue = static_cast<uint8_t>(blue / scalar);
 }
 
 Color Color::operator * (const Color& other) const {

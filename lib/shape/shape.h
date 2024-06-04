@@ -6,8 +6,8 @@
 #include <vector3d.h>
 
 #define DIFFUSE_COEF   0.8f
-#define SPECULAR_COEF  0.6f
-#define SPECULAR_POW   8.0f
+#define SPECULAR_COEF  0.5f
+#define SPECULAR_POW   12.0f
 #define AMBIENT_COEF   0.05f
 
 #define VACUUM_REFRACTIVE_INDEX     1.00f
@@ -19,6 +19,9 @@
 
 // Refractive index of the rendered world
 #define WORLD_REFRACTIVE_INDEX VACUUM_REFRACTIVE_INDEX
+
+// Use epsilon to avoid floating point rounding errors
+#define EPSILON 0.0001f
 
 typedef struct {
     float t;
@@ -56,7 +59,7 @@ public:
         return color;
     }
 
-    virtual bool intersect(Intersect* intersect, const Ray& ray) const = 0;
+    virtual bool intersect(Intersect* intersect, const Ray& ray, float far) const = 0;
 };
 
 #endif // __SHAPE_H__

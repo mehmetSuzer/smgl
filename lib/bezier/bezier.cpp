@@ -92,13 +92,13 @@ void BezierSurface::findBoundingVolume(const Vector3D* controls) {
 }
 
 // Checks whether the ray intersects the surface and finds the intersection details
-bool BezierSurface::intersect(Intersect* intersect, const Ray& ray) const {
-    if (!boundingVolume.intersect(NULL, ray)) {
+bool BezierSurface::intersect(Intersect* intersect, const Ray& ray, float far) const {
+    if (!boundingVolume.intersect(NULL, ray, far)) {
         return false;
     }
 
     for (uint32_t i = 0; i < triangles.size(); i++) {
-        if (triangles[i].intersect(intersect, ray)) {
+        if (triangles[i].intersect(intersect, ray, far)) {
             return true;
         }
     }

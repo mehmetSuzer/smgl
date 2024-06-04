@@ -2,7 +2,8 @@
 #include "camera.h"
 
 Camera::Camera(const Vector3D& position_, const Vector3D& direction_, const Vector3D& up_, 
-    float near_, float FOV_radian_, uint32_t width_, uint32_t height_) : position(position_) {
+    float near_, float far_, float FOV_radian_, uint32_t width_, uint32_t height_) : 
+    position(position_), near(near_), far(far_) {
         const Vector3D right = up_.cross(direction_);
 
         screen_half_width = near_ * tanf(FOV_radian_ / 2.0f);
@@ -12,6 +13,18 @@ Camera::Camera(const Vector3D& position_, const Vector3D& direction_, const Vect
         right_per_x = right * (2.0f * screen_half_width);
         up_per_y = up_ * (2.0f * screen_half_height);
     }
+
+const Vector3D& Camera::getPosition(void) const {
+    return position;
+}
+
+float Camera::getNear(void) const {
+    return near;
+}
+    
+float Camera::getFar(void) const {
+    return far;
+}
 
 // Generates a ray for the given point on the screen 
 // x and y must be in [0.0,1.0]
