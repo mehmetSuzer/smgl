@@ -8,6 +8,14 @@
 #define smaller(x, y) ((x > y) ? y : x)
 #define greater(x, y) ((x > y) ? x : y)
 
+// Use epsilons to avoid floating point rounding errors
+#define EPSILON1 0.1f
+#define EPSILON2 0.01f
+#define EPSILON3 0.001f
+#define EPSILON4 0.0001f
+#define EPSILON5 0.00001f
+#define EPSILON6 0.000001f
+
 class Vector3D {
 public:
     float x, y, z;

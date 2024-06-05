@@ -171,9 +171,9 @@ Vector3D Matrix3x3::cramersRule(const Vector3D& vector) const {
 
 Vector3D Matrix3x3::solve(Matrix3x3& matrix, Vector3D& vector) {
     // Swap rows so that matrix[0][0] is not zero
-    if (matrix.xs[0][0] == 0.0f) {
+    if (abs(matrix.xs[0][0]) < EPSILON5) {
         const float temp = vector.x;
-        if (matrix.xs[1][0] != 0.0f) {
+        if (abs(matrix.xs[1][0]) > EPSILON5) {
             matrix.swapRows(0, 1);
             vector.x = vector.y;
             vector.y = temp;
@@ -184,7 +184,7 @@ Vector3D Matrix3x3::solve(Matrix3x3& matrix, Vector3D& vector) {
         }
     }
 
-    if (matrix.xs[1][0] != 0.0f) {
+    if (abs(matrix.xs[1][0]) > EPSILON5) {
         const float scalar0 = matrix.xs[1][0] / matrix.xs[0][0];
         matrix.xs[1][0] = 0.0f;
         matrix.xs[1][1] -= matrix.xs[0][1] * scalar0;
@@ -192,7 +192,7 @@ Vector3D Matrix3x3::solve(Matrix3x3& matrix, Vector3D& vector) {
         vector.y -= vector.x * scalar0;
     }
 
-    if (matrix.xs[2][0] != 0.0f) {
+    if (abs(matrix.xs[2][0]) > EPSILON5) {
         const float scalar1 = matrix.xs[2][0] / matrix.xs[0][0];
         matrix.xs[2][0] = 0.0f;
         matrix.xs[2][1] -= matrix.xs[0][1] * scalar1;
@@ -200,19 +200,17 @@ Vector3D Matrix3x3::solve(Matrix3x3& matrix, Vector3D& vector) {
         vector.z -= vector.x * scalar1;
     }
 
-    // Swap rows so that matrix[1][1] is not zero
-    if (matrix.xs[1][1] == 0.0f) {
-        matrix.swapRows(1, 2);
-        const float temp = vector.y;
-        vector.y = vector.z;
-        vector.z = temp;
-    }
-
-    if (matrix.xs[2][1] != 0.0f) {
+    // Ensure that matrix[1][1] is not zero
+    if (abs(matrix.xs[1][1]) > EPSILON5) {
         const float scalar2 = matrix.xs[2][1] / matrix.xs[1][1];
         matrix.xs[2][1] = 0.0f;
         matrix.xs[2][2] -= matrix.xs[1][2] * scalar2;
         vector.z -= vector.y * scalar2;
+    } else {
+        matrix.swapRows(1, 2);
+        const float temp = vector.y;
+        vector.y = vector.z;
+        vector.z = temp;
     }
 
     const float z = vector.z / matrix.xs[2][2];

@@ -13,14 +13,15 @@ bool Sphere::intersect(Intersect* intersect, const Ray& ray, float far) const {
     const Vector3D centerToOrigin = ray.origin - center;
     const float dotProduct = centerToOrigin.dot(ray.dir);
     const float quarterDiscriminant = dotProduct*dotProduct - centerToOrigin.magSquare() + radius*radius;
-    if (quarterDiscriminant > 0.0f) { // The ray intersects the sphere
-        float t = -dotProduct - sqrtf(quarterDiscriminant); // Choose the closer intersection first
+    if (quarterDiscriminant > EPSILON6) { // The ray intersects the sphere
+        const float sqrtQuarterDiscriminant = sqrtf(quarterDiscriminant);
+        float t = -dotProduct - sqrtQuarterDiscriminant; // Choose the closer intersection first
         bool rayOriginIsInSphere = false;
         if (t >= far) { // Check whether the ray is in the allowed range
             return false;
-        } else if (t <= 0.0f) {
-            t = -dotProduct + sqrtf(quarterDiscriminant); // Choose the further intersection 
-            if (t >= far || t <= 0.0f) {
+        } else if (t <= EPSILON6) {
+            t = -dotProduct + sqrtQuarterDiscriminant; // Choose the further intersection 
+            if (t >= far || t <= EPSILON6) {
                 return false;
             }
             rayOriginIsInSphere = true;

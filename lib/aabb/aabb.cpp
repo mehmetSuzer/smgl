@@ -10,19 +10,27 @@ AABB::AABB(const Vector3D& minPoint_, const Vector3D& maxPoint_, const Color& co
     assert(minPoint.z < maxPoint.z);
 }
 
+// Use this function to set minPoint if the AABB is initialized with the constructor with no parameters
 void AABB::setMinPoint(const Vector3D& point) {
+    assert(point.x < maxPoint.x);
+    assert(point.y < maxPoint.y);
+    assert(point.z < maxPoint.z);
     minPoint = point;
 }
 
+// Use this function to set maxPoint if the AABB is initialized with the constructor with no parameters
 void AABB::setMaxPoint(const Vector3D& point) {
+    assert(minPoint.x < point.x);
+    assert(minPoint.y < point.y);
+    assert(minPoint.z < point.z);
     maxPoint = point;
 }
 
 bool AABB::intersect(Intersect* intersect, const Ray& ray, float far) const {
     // If the ray is perpendicular to an axis, then don't use this axis to calculate t
-    const bool perpendicularToX = (ray.dir.x == 0.0f); 
-    const bool perpendicularToY = (ray.dir.y == 0.0f); 
-    const bool perpendicularToZ = (ray.dir.z == 0.0f); 
+    const bool perpendicularToX = (abs(ray.dir.x) < EPSILON6); 
+    const bool perpendicularToY = (abs(ray.dir.y) < EPSILON6); 
+    const bool perpendicularToZ = (abs(ray.dir.z) < EPSILON6); 
 
     // Check whether the ray is parallel to an axis and misses the box
     if ((perpendicularToX && !(minPoint.x < ray.origin.x && ray.origin.x < maxPoint.x)) || 
@@ -74,9 +82,9 @@ bool AABB::intersect(Intersect* intersect, const Ray& ray, float far) const {
 
     if (lowT >= highT || lowT >= far) { // If the interval for t is empty or the closer intersection is out of range
         return false;
-    } else if (lowT > 0.0f) { // The intersection occurs in the forward direction of the ray
+    } else if (lowT > EPSILON6) { // The intersection occurs in the forward direction of the ray
         t = lowT;
-    } else if (highT <= 0.0f || highT >= far) { // The AABB is behind the object or the intersection is out range
+    } else if (highT <= EPSILON6 || highT >= far) { // The AABB is behind the object or the intersection is out range
         return false;
     } else { // Origin of the ray is in the AABB
         t = highT;
@@ -90,12 +98,12 @@ bool AABB::intersect(Intersect* intersect, const Ray& ray, float far) const {
         const Vector3D minDifference = intersect->hitLocation - minPoint;
         const Vector3D maxDifference = intersect->hitLocation - maxPoint;
 
-        intersect->normal = (-EPSILON4 < minDifference.x && minDifference.x < EPSILON4) ? Vector3D::left : 
-                            (-EPSILON4 < minDifference.y && minDifference.y < EPSILON4) ? Vector3D::down : 
-                            (-EPSILON4 < minDifference.z && minDifference.z < EPSILON4) ? Vector3D::backward : 
-                            (-EPSILON4 < maxDifference.x && maxDifference.x < EPSILON4) ? Vector3D::right : 
-                            (-EPSILON4 < maxDifference.y && maxDifference.y < EPSILON4) ? Vector3D::up : 
-                                                                                          Vector3D::forward; 
+        intersect->normal = (abs(minDifference.x) < EPSILON3) ? Vector3D::left : 
+                            (abs(minDifference.y) < EPSILON3) ? Vector3D::down : 
+                            (abs(minDifference.z) < EPSILON3) ? Vector3D::backward : 
+                            (abs(maxDifference.x) < EPSILON3) ? Vector3D::right : 
+                            (abs(maxDifference.y) < EPSILON3) ? Vector3D::up : 
+                                                                Vector3D::forward; 
 
         if (rayOriginIsInAABB) {
             intersect->normal *= -1.0f;

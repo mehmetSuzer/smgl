@@ -8,24 +8,19 @@
 #define DIFFUSE_COEF   0.8f
 #define SPECULAR_COEF  0.5f
 #define SPECULAR_POW   12.0f
-#define AMBIENT_COEF   0.05f
+#define AMBIENT_COEF   0.10f
 
-#define VACUUM_REFRACTIVE_INDEX     1.00f
-#define WATER_REFRACTIVE_INDEX      1.33f
-#define ICE_REFRACTIVE_INDEX        1.31f
-#define GLASS_REFRACTIVE_INDEX      1.52f
-#define SAPPHIRE_REFRACTIVE_INDEX   1.77f
-#define DIAMOND_REFRACTIVE_INDEX    2.417f
+#define VACUUM_REFRACTIVE_INDEX     1.00000f
+#define AIR_REFRACTIVE_INDEX        1.00026f
+#define ICE_REFRACTIVE_INDEX        1.31000f
+#define WATER_REFRACTIVE_INDEX      1.33000f
+#define OIL_REFRACTIVE_INDEX        1.47000f
+#define GLASS_REFRACTIVE_INDEX      1.52000f
+#define SAPPHIRE_REFRACTIVE_INDEX   1.77000f
+#define DIAMOND_REFRACTIVE_INDEX    2.41700f
 
 // Refractive index of the rendered world
 #define WORLD_REFRACTIVE_INDEX VACUUM_REFRACTIVE_INDEX
-
-// Use epsilons to avoid floating point rounding errors
-#define EPSILON1 0.1f
-#define EPSILON2 0.01f
-#define EPSILON3 0.001f
-#define EPSILON4 0.0001f
-#define EPSILON5 0.00001f
 
 typedef struct {
     float t;

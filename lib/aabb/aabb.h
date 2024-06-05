@@ -2,13 +2,12 @@
 #ifndef __AABB_H__
 #define __AABB_H__
 
-#include <iostream>
 #include <shape.h>
 
 class AABB : public Shape {
 private:
-    Vector3D minPoint;
-    Vector3D maxPoint;
+    Vector3D minPoint = Vector3D(-INFINITY, -INFINITY, -INFINITY);
+    Vector3D maxPoint = Vector3D(INFINITY, INFINITY, INFINITY);
 
 public:
     AABB();

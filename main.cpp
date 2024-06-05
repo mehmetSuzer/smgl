@@ -2,18 +2,17 @@
 #include <iostream>
 #include <fstream>
 #include <thread>
+#include <chrono>
 #include <stb_image_write.h>
 
 #include <camera.h>
 #include <sphere.h>
-#include <triangle.h>
-#include <aabb.h>
 #include <bezier.h>
 
 #define MAX_RECURSIVE_RAY_TRACING_DEPTH 4UL
 
-#define IMAGE_HEIGHT  600UL
-#define IMAGE_WIDTH   600UL
+#define IMAGE_HEIGHT  840UL
+#define IMAGE_WIDTH   840UL
 
 #define THREAD_NUMBER 12UL
 #define WIDTH_PER_THREAD (IMAGE_WIDTH/THREAD_NUMBER)
@@ -27,11 +26,11 @@ Color image[IMAGE_HEIGHT * IMAGE_WIDTH] = {BACKGROUND_COLOR};
 
 const Vector3D vertices[] = {
             //          X                     Y                           Z
-    Vector3D(60.0f,                     GROUND_LEVEL,                  180.0f), // pyramid
-    Vector3D(60.0f + 40.0f*sqrtf(2.0f), GROUND_LEVEL,                  180.0f + 40.0f*sqrtf(2.0f)),
-    Vector3D(60.0f,                     GROUND_LEVEL,                  180.0f + 80.0f*sqrtf(2.0f)),
-    Vector3D(60.0f - 40.0f*sqrtf(2.0f), GROUND_LEVEL,                  180.0f + 40.0f*sqrtf(2.0f)),
-    Vector3D(60.0f,                     GROUND_LEVEL + 50*sqrtf(2.0f), 180.0f + 40.0f*sqrtf(2.0f)),
+    Vector3D(60.0f,                     GROUND_LEVEL,                  220.0f), // pyramid
+    Vector3D(60.0f + 40.0f*sqrtf(2.0f), GROUND_LEVEL,                  220.0f + 40.0f*sqrtf(2.0f)),
+    Vector3D(60.0f,                     GROUND_LEVEL,                  220.0f + 80.0f*sqrtf(2.0f)),
+    Vector3D(60.0f - 40.0f*sqrtf(2.0f), GROUND_LEVEL,                  220.0f + 40.0f*sqrtf(2.0f)),
+    Vector3D(60.0f,                     GROUND_LEVEL + 50*sqrtf(2.0f), 220.0f + 40.0f*sqrtf(2.0f)),
 
     Vector3D(0.0f,                      GROUND_LEVEL,                  -100.0f), // plane
     Vector3D(-1000.0f,                  GROUND_LEVEL,                  1000.0f),
@@ -59,28 +58,28 @@ const uint32_t triangleNumber = sizeof(triangles) / sizeof(triangles[0]);
 /* ----------------------------------------------------------------------*/
 
 const Sphere spheres[] = {
-    Sphere(Vector3D(-30.0f, GROUND_LEVEL + 50.0f, 200.0f), 50.0f, Color::Yellow, true, 0.0f, GLASS_REFRACTIVE_INDEX),
+    Sphere(Vector3D(-50.0f, GROUND_LEVEL + 50.0f, 220.0f), 50.0f, Color::Yellow, true, 0.0f, GLASS_REFRACTIVE_INDEX),
 };
 const uint32_t sphereNumber = sizeof(spheres) / sizeof(spheres[0]);
 
 /* ----------------------------------------------------------------------*/
 
 const AABB aabbs[] = {
-    AABB(Vector3D(-50.0f, GROUND_LEVEL + EPSILON4, 130.0f), Vector3D(50.0f, GROUND_LEVEL + 20.0f, 140.0f), Color::Green, false, 0.0f, GLASS_REFRACTIVE_INDEX),
-    AABB(Vector3D(-10.0f, GROUND_LEVEL + EPSILON4, 100.0f), Vector3D(30.0f, GROUND_LEVEL + 90.0f, 120.0f), Color::Blue, false, 0.8f, GLASS_REFRACTIVE_INDEX),
+    AABB(Vector3D(-50.0f, GROUND_LEVEL + EPSILON4, 160.0f), Vector3D(50.0f, GROUND_LEVEL + 20.0f, 170.0f), Color::Red, false, 0.0f, GLASS_REFRACTIVE_INDEX),
+    AABB(Vector3D(-10.0f, GROUND_LEVEL + EPSILON4, 140.0f), Vector3D(30.0f, GROUND_LEVEL + 90.0f, 155.0f), Color::Blue, false, 0.8f, GLASS_REFRACTIVE_INDEX),
 };
 const uint32_t aabbNumber = sizeof(aabbs) / sizeof(aabbs[0]);
 
 /* ----------------------------------------------------------------------*/
 
-const float bezierScalar = 20.0f;
+const float bezierScalar = 12.0f;
 const float bezierRadianX = 0.0f;
 const float bezierRadianY = 0.0f;
 const float bezierRadianZ = 0.0f;
-const uint32_t bezierSubdivision = 4;
-const float bezierTransparency = 0.7f;
+const uint32_t bezierSubdivision = 8;
+const float bezierTransparency = 0.99f;
 const float bezierRefractiveIndex = GLASS_REFRACTIVE_INDEX;
-const Vector3D bezierPosition = Vector3D(0.0f, GROUND_LEVEL + 10.0f, 140.0f);
+const Vector3D bezierPosition = Vector3D(0.0f, GROUND_LEVEL, 110.0f);
 
 // Initialized in the main function
 std::vector<BezierSurface> bezierVector;
@@ -90,8 +89,7 @@ uint32_t bezierSurfaceNumber = 0;
 /* ----------------------------------------------------------------------*/
 
 const Light lights[] = {
-    Light{Vector3D(-60.0f, GROUND_LEVEL + 100.0f, 70.0f), Color::White},
-    // Light{Vector3D(80.0f, GROUND_LEVEL + 150.0f, 250.0f), Color::Cyan},
+    Light{Vector3D(0.0f, GROUND_LEVEL + 40.0f, 0.0f), Color::White},
 };
 const uint32_t lightNumber = sizeof(lights) / sizeof(lights[0]);
 
@@ -224,7 +222,7 @@ void traceRay(Ray& ray, Color& color, float incomingRefractiveIndex, uint32_t de
         }
 
         bool totalReflection = false;
-        if (closestShape->getTransparency() != 0.0f) {
+        if (closestShape->getTransparency() > 0.0f) {
             const float normalDotComingRayDir = closestIntersect.normal.dot(ray.dir);
             const float sinComingAngle = sqrtf(1.0f - normalDotComingRayDir*normalDotComingRayDir);
             const float outgoingRefractiveIndex = 
@@ -237,7 +235,7 @@ void traceRay(Ray& ray, Color& color, float incomingRefractiveIndex, uint32_t de
             if (!totalReflection) {
                 Ray refractionRay;
                 const Vector3D RayDirPerpendicularComponent = ray.dir - closestIntersect.normal * normalDotComingRayDir;
-                if (RayDirPerpendicularComponent.mag() != 0.0f) {
+                if (RayDirPerpendicularComponent.mag() > EPSILON4) {
                     refractionRay.dir = (-closestIntersect.normal + RayDirPerpendicularComponent.normalize() 
                         * (incomingRefractiveIndex / outgoingRefractiveIndex * sinComingAngle)).normalize();
                 } else {
@@ -304,6 +302,7 @@ void threadFunction(uint32_t widthStart, uint32_t widthEnd) {
 }
 
 int main(int argc, char **argv) {
+    std::chrono::_V2::system_clock::time_point start = std::chrono::high_resolution_clock::now();
     std::vector<Vector3D> bezierVertices = readCubicBezierData("data/bezier.txt");
     for (uint32_t i = 0; i < bezierVertices.size(); i++) {
         bezierVertices[i] *= bezierScalar;
@@ -345,7 +344,10 @@ int main(int argc, char **argv) {
     // Write the image
     std::cout << "Writing image.png..." << std::endl;
     stbi_write_png("image.png", IMAGE_WIDTH, IMAGE_HEIGHT, 3, image, 3*IMAGE_WIDTH);
-    std::cout << "Finished..." << std::endl;
+
+    std::chrono::_V2::system_clock::time_point end = std::chrono::high_resolution_clock::now();
+    float durationInSeconds = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() / 1E6f;
+    std::cout << "Finished in " << durationInSeconds << " seconds..." << std::endl;
 
     return 0;
 }

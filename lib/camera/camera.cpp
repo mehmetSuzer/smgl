@@ -1,18 +1,21 @@
 
 #include "camera.h"
 
-Camera::Camera(const Vector3D& position_, const Vector3D& direction_, const Vector3D& up_, 
-    float near_, float far_, float FOVRadian_, uint32_t width_, uint32_t height_) : 
-    position(position_), near(near_), far(far_) {
-        const Vector3D right = up_.cross(direction_);
+Camera::Camera(const Vector3D& position_, const Vector3D& direction_, const Vector3D& up_, float near_, float far_, 
+    float FOVRadian_, uint32_t width_, uint32_t height_) : position(position_), near(near_), far(far_) {
+        
+    assert(near_ > EPSILON3);
+    assert(far_ > near_);
+    assert(EPSILON1 < FOVRadian_ && FOVRadian_ < M_PIf * 0.98f);
 
-        screenHalfWidth = near_ * tanf(FOVRadian_ / 2.0f);
-        screenHalfHeight = (screenHalfWidth / height_) * width_;
-        lowerLeft = direction_*near_ - (right*screenHalfWidth) - (up_*screenHalfHeight);
+    const Vector3D right = up_.cross(direction_);
+    screenHalfWidth = near_ * tanf(FOVRadian_ / 2.0f);
+    screenHalfHeight = (screenHalfWidth / height_) * width_;
+    lowerLeft = direction_*near_ - right*screenHalfWidth - up_*screenHalfHeight;
 
-        rightPerX = right * (2.0f * screenHalfWidth);
-        upPerY = up_ * (2.0f * screenHalfHeight);
-    }
+    rightPerX = right * (2.0f * screenHalfWidth);
+    upPerY = up_ * (2.0f * screenHalfHeight);
+}
 
 const Vector3D& Camera::getPosition(void) const {
     return position;
