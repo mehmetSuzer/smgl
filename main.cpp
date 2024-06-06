@@ -5,6 +5,10 @@
 #include <chrono>
 #include <stb_image_write.h>
 
+#include <point_light.h>
+#include <directional_light.h>
+#include <spot_light.h>
+
 #include <camera.h>
 #include <sphere.h>
 #include <bezier.h>
@@ -65,21 +69,21 @@ const uint32_t sphereNumber = sizeof(spheres) / sizeof(spheres[0]);
 /* ----------------------------------------------------------------------*/
 
 const AABB aabbs[] = {
-    AABB(Vector3D(-50.0f, GROUND_LEVEL + EPSILON4, 160.0f), Vector3D(50.0f, GROUND_LEVEL + 20.0f, 170.0f), Color::Red, false, 0.0f, GLASS_REFRACTIVE_INDEX),
-    AABB(Vector3D(-10.0f, GROUND_LEVEL + EPSILON4, 140.0f), Vector3D(30.0f, GROUND_LEVEL + 90.0f, 155.0f), Color::Blue, false, 0.8f, GLASS_REFRACTIVE_INDEX),
+    // AABB(Vector3D(-50.0f, GROUND_LEVEL + EPSILON4, 160.0f), Vector3D(50.0f, GROUND_LEVEL + 20.0f, 170.0f), Color::Red, false, 0.0f, GLASS_REFRACTIVE_INDEX),
+    // AABB(Vector3D(-10.0f, GROUND_LEVEL + EPSILON4, 140.0f), Vector3D(30.0f, GROUND_LEVEL + 90.0f, 155.0f), Color::Blue, false, 0.8f, GLASS_REFRACTIVE_INDEX),
 };
 const uint32_t aabbNumber = sizeof(aabbs) / sizeof(aabbs[0]);
 
 /* ----------------------------------------------------------------------*/
 
-const float bezierScalar = 12.0f;
+const float bezierScalar = 20.0f;
 const float bezierRadianX = 0.0f;
 const float bezierRadianY = 0.0f;
 const float bezierRadianZ = 0.0f;
-const uint32_t bezierSubdivision = 8;
+const uint32_t bezierSubdivision = 4;
 const float bezierTransparency = 0.99f;
 const float bezierRefractiveIndex = GLASS_REFRACTIVE_INDEX;
-const Vector3D bezierPosition = Vector3D(0.0f, GROUND_LEVEL, 110.0f);
+const Vector3D bezierPosition = Vector3D(0.0f, GROUND_LEVEL, 160.0f);
 
 // Initialized in the main function
 std::vector<BezierSurface> bezierVector;
@@ -88,8 +92,14 @@ uint32_t bezierSurfaceNumber = 0;
 
 /* ----------------------------------------------------------------------*/
 
-const Light lights[] = {
-    Light{Vector3D(0.0f, GROUND_LEVEL + 40.0f, 0.0f), Color::White},
+const PointLight pointLight = PointLight(Vector3D(0.0f, GROUND_LEVEL + 40.0f, 0.0f), Color::White, 2E-5f, 1E-5f);
+const DirectionalLight directionalLight = DirectionalLight(Vector3D(sqrtf(0.5f), 0.0f, sqrtf(0.5f)), Color::White, 1.0f);
+const SpotLight spotLight = SpotLight(Vector3D(0.0f, GROUND_LEVEL + 250.0f, 150.0f), Color::White, 2E-5f, 1E-5f, Vector3D(0.0f, -1.0f, 0.0f), M_PIf/3.0f);
+
+const Light* lights[] = {
+    (Light*)&pointLight,
+    // (Light*)&directionalLight,
+    // (Light*)&spotLight,
 };
 const uint32_t lightNumber = sizeof(lights) / sizeof(lights[0]);
 
@@ -163,58 +173,53 @@ void traceRay(Ray& ray, Color& color, float incomingRefractiveIndex, uint32_t de
         }
 
         for (i = 0; i < lightNumber; i++) {
-            // Generate the light ray pointing from the hit location to the light source
-            const Vector3D lightVector = lights[i].position - closestIntersect.hitLocation;
-            const float lightDistance = lightVector.mag();
-            const Vector3D lightDir = lightVector.normalize();
+            const LightInfo lightInfo = lights[i]->shine(closestIntersect.hitLocation);
+            if (lightInfo.distance == -INFINITY) { // Light does not hit to the hit location
+                continue;
+            }
             const Ray lightRay = {
                 .origin = closestIntersect.hitLocation + closestIntersect.normal * EPSILON3,
-                .dir = lightDir,
+                .dir = lightInfo.directionToLight,
             };
             float shadowingShapeTransparency = 1.0f;
 
             // Check if any sphere prevents light beams from hitting to the hit location
             for (j = 0; j < sphereNumber && shadowingShapeTransparency == 1.0f; j++) {
-                if (spheres[j].intersect(NULL, lightRay, lightDistance)) {
+                if (spheres[j].intersect(NULL, lightRay, lightInfo.distance)) {
                     shadowingShapeTransparency = spheres[j].getTransparency();
                 }
             }
 
             // Check if any AABB prevents light beams from hitting to the hit location
             for (j = 0; j < aabbNumber && shadowingShapeTransparency == 1.0f; j++) {
-                if (aabbs[j].intersect(NULL, lightRay, lightDistance)) {
+                if (aabbs[j].intersect(NULL, lightRay, lightInfo.distance)) {
                     shadowingShapeTransparency = aabbs[j].getTransparency();
                 }
             }
 
             // Check if any triangle prevents light beams from hitting to the hit location
             for (j = 0; j < triangleNumber && shadowingShapeTransparency == 1.0f; j++) {
-                if (triangles[j].intersect(NULL, lightRay, lightDistance)) {
+                if (triangles[j].intersect(NULL, lightRay, lightInfo.distance)) {
                     shadowingShapeTransparency = triangles[j].getTransparency();
                 }
             }
 
             // Check if any bezier surface prevents light beams from hitting to the hit location
             for (j = 0; j < bezierSurfaceNumber && shadowingShapeTransparency == 1.0f; j++) {
-                if (bezierSurfaces[j].intersect(NULL, lightRay, lightDistance)) {
+                if (bezierSurfaces[j].intersect(NULL, lightRay, lightInfo.distance)) {
                     shadowingShapeTransparency = bezierSurfaces[j].getTransparency();
                 }
             }
 
             // Calculate diffuse and specular light intensity
-            const float diffuse = DIFFUSE_COEF * greater(lightDir.dot(closestIntersect.normal), 0.0f);
-            const Vector3D bisector = Vector3D::bisector(lightDir, -ray.dir);
+            const float diffuse = DIFFUSE_COEF * greater(lightInfo.directionToLight.dot(closestIntersect.normal), 0.0f);
+            const Vector3D bisector = Vector3D::bisector(lightInfo.directionToLight, -ray.dir);
             const float specular = SPECULAR_COEF * powf(greater(bisector.dot(closestIntersect.normal), 0.0f), SPECULAR_POW);
             
-            // Calculate the intensity
-	        const float a = 0.00002f;
-	        const float b = 0.00001f;
-	        const float inverseIntensity = (a * lightDistance + b) * lightDistance + 1.0f; // inverseIntensity = 1.0f / intensity
-
             // Calculate the color that will be added
-            const Color addedColor = closestShape->getColor() * lights[i].color 
+            const Color addedColor = closestShape->getColor() * lights[i]->getColor()
                 * ((diffuse + specular) 
-                / inverseIntensity                              // Intensity of the light at the point
+                * lightInfo.intensity                           // Intensity of the light at the point
                 / (depthCount * depthCount)                     // As the recursion depth increases, the effect of reflections get smaller
                 * shadowingShapeTransparency                    // If an object casts shadow onto the point, use its transparency
                 * (1.0f - closestShape->getTransparency()));    // Opacity of the object contributes to the color at the point
@@ -227,21 +232,25 @@ void traceRay(Ray& ray, Color& color, float incomingRefractiveIndex, uint32_t de
             const float sinComingAngle = sqrtf(1.0f - normalDotComingRayDir*normalDotComingRayDir);
             const float outgoingRefractiveIndex = 
                 (incomingRefractiveIndex == WORLD_REFRACTIVE_INDEX) ? closestShape->getRefractiveIndex() : WORLD_REFRACTIVE_INDEX;
+            const float outgoingToIncomingRefractiveIndexRatio = outgoingRefractiveIndex / incomingRefractiveIndex;
 
             // Check whether there is a total reflection or not
-            totalReflection = sinComingAngle >= outgoingRefractiveIndex/incomingRefractiveIndex;
+            totalReflection = sinComingAngle >= outgoingToIncomingRefractiveIndexRatio;
 
             // If there is no total reflection, then calculate the ray and call the function recursively
             if (!totalReflection) {
-                Ray refractionRay;
-                const Vector3D RayDirPerpendicularComponent = ray.dir - closestIntersect.normal * normalDotComingRayDir;
-                if (RayDirPerpendicularComponent.mag() > EPSILON4) {
-                    refractionRay.dir = (-closestIntersect.normal + RayDirPerpendicularComponent.normalize() 
-                        * (incomingRefractiveIndex / outgoingRefractiveIndex * sinComingAngle)).normalize();
-                } else {
-                    refractionRay.dir = -closestIntersect.normal;
-                }
-                refractionRay.origin = closestIntersect.hitLocation + refractionRay.dir * EPSILON3;
+                const float sinOutgoingAngle = sinComingAngle / outgoingToIncomingRefractiveIndexRatio;
+                const float cosOutgoingAngle = sqrtf(1.0f - sinOutgoingAngle * sinOutgoingAngle);
+
+                const Vector3D refractiveRayDirParallelToNormal = closestIntersect.normal * (-cosOutgoingAngle);
+                const Vector3D refractiveRayDirPerpendicularToNormal = 
+                    (ray.dir - closestIntersect.normal * normalDotComingRayDir) / outgoingToIncomingRefractiveIndexRatio;
+                const Vector3D refractiveRayDir = refractiveRayDirPerpendicularToNormal + refractiveRayDirParallelToNormal;
+
+                Ray refractionRay = {
+                    .origin = closestIntersect.hitLocation, //  + refractiveRayDir * EPSILON3,
+                    .dir = refractiveRayDir,
+                };
 
                 // Recursion depth does not increase since we want objects behind a transparent object to contribute more
                 traceRay(refractionRay, color, outgoingRefractiveIndex, depthCount);
@@ -309,7 +318,7 @@ int main(int argc, char **argv) {
         bezierVertices[i].rotate(bezierRadianX, bezierRadianY, bezierRadianZ);
         bezierVertices[i] += bezierPosition;
     }
-    // bezierSurfaceNumber = bezierVertices.size() >> 4; // divide by 16
+    bezierSurfaceNumber = bezierVertices.size() >> 4; // divide by 16
 
     for (uint32_t i = 0; i < bezierSurfaceNumber; i++) {
         bezierVector.push_back(

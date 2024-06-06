@@ -3,11 +3,16 @@
 
 Triangle::Triangle(): Shape(Color::Black, false, 0.0f, VACUUM_REFRACTIVE_INDEX) {}
     
-Triangle::Triangle(const Vector3D& a_, const Vector3D& b_, const Vector3D& c_, const Color& color, bool reflect, float transparency, float refractiveIndex) :
-    Shape(color, reflect, transparency, refractiveIndex), a(a_), b(b_), c(c_), normal((b_-a_).cross(c_-a_).normalize()) {}
+Triangle::Triangle(const Vector3D& a_, const Vector3D& b_, const Vector3D& c_, const Color& color, bool reflect, float transparency, float refractiveIndex) 
+    : Shape(color, reflect, transparency, refractiveIndex), a(a_), b(b_), c(c_), normal((b_-a_).cross(c_-a_).normalize()) {}
 
 // Checks whether the ray intersects the triangle and finds the intersection details
 bool Triangle::intersect(Intersect* intersect, const Ray& ray, float far) const {
+    // Check whether the ray direction is parallel to the triangle
+    if (abs(normal.dot(ray.dir)) < EPSILON6) {
+        return false;
+    }
+
     // Solve for Beta, Gamma, and t 
     Matrix3x3 matrix = Matrix3x3(a-b, a-c, ray.dir, true);
     Vector3D vector = a - ray.origin;

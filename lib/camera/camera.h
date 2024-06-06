@@ -5,11 +5,6 @@
 #include <color.h>
 #include <vector3d.h>
 
-typedef struct {
-    const Vector3D& position;
-    const Color& color;
-} Light;
-
 class Camera {
 private:
     const Vector3D position;

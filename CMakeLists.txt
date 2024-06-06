@@ -23,6 +23,9 @@ include_directories(${LIB_DIR}/vector3d)
 add_subdirectory(${LIB_DIR}/matrix3x3)
 include_directories(${LIB_DIR}/matrix3x3)
 
+add_subdirectory(${LIB_DIR}/light)
+include_directories(${LIB_DIR}/light)
+
 add_subdirectory(${LIB_DIR}/camera)
 include_directories(${LIB_DIR}/camera)
 
@@ -55,8 +58,9 @@ target_link_libraries(${PROJECT_NAME}
     triangle
     sphere
     camera
-    color
-    vector3d
+    light
     matrix3x3
+    vector3d
+    color
     stb
 )
