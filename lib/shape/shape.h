@@ -5,7 +5,7 @@
 #include <color.h>
 #include <vector3d.h>
 
-#define DIFFUSE_COEF   0.8f
+#define DIFFUSE_COEF   0.9f
 #define SPECULAR_COEF  0.5f
 #define SPECULAR_POW   12.0f
 #define AMBIENT_COEF   0.1f
@@ -38,8 +38,8 @@ private:
 public:
     Shape(const Color& color_, float reflectivity_, float transparency_, float refractiveIndex_) 
         : color(color_), reflectivity(reflectivity_), transparency(transparency_), refractiveIndex(refractiveIndex_) {
-        assert(0.0f <= reflectivity_ && reflectivity_ < 1.0f);
-        assert(0.0f <= transparency_ && transparency_ < 1.0f);
+        assert(0.0f <= reflectivity_ && 0.0f <= transparency_);
+        assert(reflectivity_ + transparency_ < 1.0f);
         assert(refractiveIndex_ >= VACUUM_REFRACTIVE_INDEX);
     }
 
