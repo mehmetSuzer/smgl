@@ -11,7 +11,7 @@ private:
 
 public:
     AABB();
-    AABB(const Vector3D& minPoint_, const Vector3D& maxPoint_, const Color& color, bool reflect, float transparency, float refractiveIndex);
+    AABB(const Vector3D& minPoint_, const Vector3D& maxPoint_, const Color& color, float reflectivity, float transparency, float refractiveIndex);
 
     void setMinPoint(const Vector3D& point);
     void setMaxPoint(const Vector3D& point);

@@ -14,7 +14,8 @@ private:
 
 public:
     Triangle();
-    Triangle(const Vector3D& a_, const Vector3D& b_, const Vector3D& c_, const Color& color, bool reflect, float transparency, float refractiveIndex);
+    Triangle(const Vector3D& a_, const Vector3D& b_, const Vector3D& c_, const Color& color, 
+        float reflectivity, float transparency, float refractiveIndex);
     
     bool intersect(Intersect* intersect, const Ray& ray, float far) const override;
 };

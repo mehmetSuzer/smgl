@@ -44,33 +44,35 @@ const uint32_t vertexNumber = sizeof(vertices) / sizeof(vertices[0]);
 
 /* ----------------------------------------------------------------------*/
 
-const bool pyramidReflect = true;
+const float pyramidReflectivity = 0.0f;
 const float pyramidTransparency = 0.0f;
 const Triangle triangles[] = {
-    Triangle(vertices[0], vertices[1], vertices[4], Color::Cyan, pyramidReflect, pyramidTransparency, GLASS_REFRACTIVE_INDEX), // pyramid side surfaces
-    Triangle(vertices[1], vertices[2], vertices[4], Color::Green, pyramidReflect, pyramidTransparency, GLASS_REFRACTIVE_INDEX),
-    Triangle(vertices[2], vertices[3], vertices[4], Color::Blue, pyramidReflect, pyramidTransparency, GLASS_REFRACTIVE_INDEX),
-    Triangle(vertices[0], vertices[3], vertices[4], Color::Red, pyramidReflect, pyramidTransparency, GLASS_REFRACTIVE_INDEX),
+    // Triangle(vertices[0], vertices[1], vertices[4], Color::Cyan, pyramidReflectivity, pyramidTransparency, GLASS_REFRACTIVE_INDEX), // pyramid side surfaces
+    // Triangle(vertices[1], vertices[2], vertices[4], Color::Green, pyramidReflectivity, pyramidTransparency, GLASS_REFRACTIVE_INDEX),
+    // Triangle(vertices[2], vertices[3], vertices[4], Color::Blue, pyramidReflectivity, pyramidTransparency, GLASS_REFRACTIVE_INDEX),
+    // Triangle(vertices[0], vertices[3], vertices[4], Color::Red, pyramidReflectivity, pyramidTransparency, GLASS_REFRACTIVE_INDEX),
 
-    Triangle(vertices[0], vertices[1], vertices[2], Color::Magenta, pyramidReflect, pyramidTransparency, GLASS_REFRACTIVE_INDEX), // pyramid bottom surface
-    Triangle(vertices[0], vertices[3], vertices[2], Color::Yellow, pyramidReflect, pyramidTransparency, GLASS_REFRACTIVE_INDEX),
+    // Triangle(vertices[0], vertices[1], vertices[2], Color::Magenta, pyramidReflectivity, pyramidTransparency, GLASS_REFRACTIVE_INDEX), // pyramid bottom surface
+    // Triangle(vertices[0], vertices[3], vertices[2], Color::Yellow, pyramidReflectivity, pyramidTransparency, GLASS_REFRACTIVE_INDEX),
 
-    Triangle(vertices[5], vertices[6], vertices[7], Color::Gray, true, 0.0f, GLASS_REFRACTIVE_INDEX), // plane
+    Triangle(vertices[5], vertices[6], vertices[7], Color::Gray, 0.4f, 0.0f, GLASS_REFRACTIVE_INDEX), // plane
 };
 const uint32_t triangleNumber = sizeof(triangles) / sizeof(triangles[0]);
 
 /* ----------------------------------------------------------------------*/
 
 const Sphere spheres[] = {
-    Sphere(Vector3D(-50.0f, GROUND_LEVEL + 50.0f, 220.0f), 50.0f, Color::Yellow, true, 0.0f, GLASS_REFRACTIVE_INDEX),
+    Sphere(Vector3D(-50.0f, GROUND_LEVEL + 50.0f, 200.0f), 50.0f, Color::Red, 0.4f, 0.0f, GLASS_REFRACTIVE_INDEX),
+    Sphere(Vector3D(50.0f, GROUND_LEVEL + 50.0f, 200.0f), 50.0f, Color::Green, 0.4f, 0.0f, GLASS_REFRACTIVE_INDEX),
+    Sphere(Vector3D(0.0f, GROUND_LEVEL + 20.0f, 100.0f), 20.0f, Color::Blue, 0.0f, 0.99f, GLASS_REFRACTIVE_INDEX),
 };
 const uint32_t sphereNumber = sizeof(spheres) / sizeof(spheres[0]);
 
 /* ----------------------------------------------------------------------*/
 
 const AABB aabbs[] = {
-    AABB(Vector3D(-50.0f, GROUND_LEVEL + EPSILON4, 160.0f), Vector3D(50.0f, GROUND_LEVEL + 20.0f, 170.0f), Color::Red, false, 0.0f, GLASS_REFRACTIVE_INDEX),
-    AABB(Vector3D(-10.0f, GROUND_LEVEL + EPSILON4, 140.0f), Vector3D(30.0f, GROUND_LEVEL + 90.0f, 155.0f), Color::Blue, false, 0.95f, GLASS_REFRACTIVE_INDEX),
+    // AABB(Vector3D(-50.0f, GROUND_LEVEL + EPSILON4, 160.0f), Vector3D(50.0f, GROUND_LEVEL + 20.0f, 170.0f), Color::Red, 0.0f, 0.0f, GLASS_REFRACTIVE_INDEX),
+    // AABB(Vector3D(-10.0f, GROUND_LEVEL + EPSILON4, 140.0f), Vector3D(30.0f, GROUND_LEVEL + 90.0f, 155.0f), Color::Blue, 0.0f, 0.95f, GLASS_REFRACTIVE_INDEX),
 };
 const uint32_t aabbNumber = sizeof(aabbs) / sizeof(aabbs[0]);
 
@@ -81,6 +83,8 @@ const float bezierRadianX = 0.0f;
 const float bezierRadianY = 0.0f;
 const float bezierRadianZ = 0.0f;
 const uint32_t bezierSubdivision = 4;
+const Color& bezierColor = Color::Cyan;
+const float bezierReflectivity = 0.0f;
 const float bezierTransparency = 0.99f;
 const float bezierRefractiveIndex = GLASS_REFRACTIVE_INDEX;
 const Vector3D bezierPosition = Vector3D(0.0f, GROUND_LEVEL, 115.0f);
@@ -92,9 +96,24 @@ uint32_t bezierSurfaceNumber = 0;
 
 /* ----------------------------------------------------------------------*/
 
-const PointLight pointLight = PointLight(Vector3D(0.0f, GROUND_LEVEL + 40.0f, 0.0f), Color::White, 2E-5f, 1E-5f);
-const DirectionalLight directionalLight = DirectionalLight(Vector3D(sqrtf(0.5f), 0.0f, sqrtf(0.5f)), Color::White, 1.0f);
-const SpotLight spotLight = SpotLight(Vector3D(0.0f, GROUND_LEVEL + 250.0f, 150.0f), Color::White, 2E-5f, 1E-5f, Vector3D(0.0f, -1.0f, 0.0f), M_PIf/3.0f);
+const PointLight pointLight = PointLight(
+    Vector3D(-40.0f, GROUND_LEVEL + 100.0f, 0.0f), 
+    Color::White, 
+    2E-5f, 1E-5f
+);
+
+const DirectionalLight directionalLight = DirectionalLight(
+    Vector3D(sqrtf(0.5f), 0.0f, sqrtf(0.5f)), 
+    Color::White, 
+    1.0f
+);
+const SpotLight spotLight = SpotLight(
+    Vector3D(0.0f, GROUND_LEVEL + 250.0f, 150.0f), 
+    Color::White, 
+    2E-5f, 1E-5f, 
+    Vector3D(0.0f, -1.0f, 0.0f), 
+    M_PIf/3.0f
+);
 
 const Light* lights[] = {
     (Light*)&pointLight,
@@ -118,8 +137,8 @@ const Camera camera = Camera(
 
 /* ----------------------------------------------------------------------*/
 
-// Recursive ray tracers that supports reflection and refraction
-void traceRay(Ray& ray, Color& color, float incomingRefractiveIndex, uint32_t depthCount) {
+// Recursive ray tracers that supports reflection and refraction, and different types of light sources
+void traceRay(Ray& ray, Color& color, float incomingRefractiveIndex, float reflectivityOfPreviousShape, uint32_t depthCount) {
     // If the max recursive depth is exceeded, then stop tracing
     if (depthCount > MAX_RECURSIVE_RAY_TRACING_DEPTH) {
         return;
@@ -219,13 +238,15 @@ void traceRay(Ray& ray, Color& color, float incomingRefractiveIndex, uint32_t de
             // Calculate the color that will be added
             const Color addedColor = closestShape->getColor() * lights[i]->getColor()
                 * ((diffuse + specular) 
-                * lightInfo.intensity                           // Intensity of the light at the point
-                / (depthCount * depthCount)                     // As the recursion depth increases, the effect of reflections get smaller
-                * shadowingShapeTransparency                    // If an object casts shadow onto the point, use its transparency
-                * (1.0f - closestShape->getTransparency()));    // Opacity of the object contributes to the color at the point
+                * lightInfo.intensity                           // As intensity of the light increases, the point looks brighter
+                * reflectivityOfPreviousShape                   // As the reflectivity of the previous shape increases, the current object gets more visible
+                * shadowingShapeTransparency                    // If an object casts shadow onto the point, the point looks dimmer
+                * (1.0f - closestShape->getTransparency())      // As the transparency of the shape increases, its color gets less visible
+                * (1.0f - closestShape->getReflectivity()));    // As the reflectivity of the shape increases, its color gets less visible
             color += addedColor;
         }
 
+        float reflectivity = reflectivityOfPreviousShape;
         bool totalReflection = false;
         if (closestShape->getTransparency() > 0.0f) {
             const float normalDotComingRayDir = closestIntersect.normal.dot(ray.dir);
@@ -239,6 +260,7 @@ void traceRay(Ray& ray, Color& color, float incomingRefractiveIndex, uint32_t de
 
             // If there is no total reflection, then calculate the ray and call the function recursively
             if (!totalReflection) {
+                reflectivity *= closestShape->getReflectivity();
                 const Vector3D dirPerpendicularComponentToNormal = ray.dir - closestIntersect.normal * normalDotComingRayDir;
                 const Vector3D refractiveRayDir = 
                     (-closestIntersect.normal + dirPerpendicularComponentToNormal / outgoingToIncomingRefractiveIndexRatio).normalize();
@@ -249,18 +271,18 @@ void traceRay(Ray& ray, Color& color, float incomingRefractiveIndex, uint32_t de
                 };
 
                 // Recursion depth does not increase since we want objects behind a transparent object to contribute more
-                traceRay(refractiveRay, color, outgoingRefractiveIndex, depthCount);
+                traceRay(refractiveRay, color, outgoingRefractiveIndex, reflectivityOfPreviousShape, depthCount);
             }
         }
 
         // If a total reflection occurs, or the surface is reflective
-        if (totalReflection || closestShape->isReflective()) {
-            // Calculate the reflection ray and call the function recursively
+        if (totalReflection || closestShape->getReflectivity() > 0.0f) {
+            const Vector3D reflectionDir = Vector3D::reflection(-ray.dir, closestIntersect.normal);
             Ray reflectionRay = {
-                .origin = closestIntersect.hitLocation,
-                .dir = Vector3D::reflection(-ray.dir, closestIntersect.normal)
+                .origin = closestIntersect.hitLocation + reflectionDir * EPSILON3,
+                .dir = reflectionDir,
             };
-            traceRay(reflectionRay, color, incomingRefractiveIndex, depthCount+1);
+            traceRay(reflectionRay, color, incomingRefractiveIndex, reflectivity, depthCount+1);
         }
     }
 }
@@ -301,7 +323,7 @@ void threadFunction(uint32_t widthStart, uint32_t widthEnd) {
             
             // Calculate the color of the pixel
             Color& color = image[(IMAGE_HEIGHT-j-1)*IMAGE_WIDTH + i];
-            traceRay(ray, color, WORLD_REFRACTIVE_INDEX, 1);
+            traceRay(ray, color, WORLD_REFRACTIVE_INDEX, 1.25f, 1);
         }
     }
 }
@@ -314,15 +336,15 @@ int main(int argc, char **argv) {
         bezierVertices[i].rotate(bezierRadianX, bezierRadianY, bezierRadianZ);
         bezierVertices[i] += bezierPosition;
     }
-    bezierSurfaceNumber = bezierVertices.size() >> 4; // divide by 16
+    // bezierSurfaceNumber = bezierVertices.size() >> 4; // divide by 16
 
     for (uint32_t i = 0; i < bezierSurfaceNumber; i++) {
         bezierVector.push_back(
             BezierSurface(
                 bezierVertices.data() + (i << 4), 
                 bezierSubdivision, 
-                Color::Cyan, 
-                false, 
+                bezierColor, 
+                bezierReflectivity, 
                 bezierTransparency, 
                 bezierRefractiveIndex
             )

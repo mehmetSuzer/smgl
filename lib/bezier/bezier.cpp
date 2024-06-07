@@ -1,10 +1,10 @@
 
 #include "bezier.h"
 
-BezierSurface::BezierSurface() : Shape(Color::Black, false, 0.0f, VACUUM_REFRACTIVE_INDEX), subdivision(4) {}
+BezierSurface::BezierSurface() : Shape(Color::Black, 0.0f, 0.0f, VACUUM_REFRACTIVE_INDEX), subdivision(4) {}
 
-BezierSurface::BezierSurface(Vector3D* controls, uint32_t subdivision_, const Color& color, bool reflect, float transparency, float refractiveIndex) 
-    : Shape(color, reflect, transparency, refractiveIndex), subdivision(subdivision_) {
+BezierSurface::BezierSurface(Vector3D* controls, uint32_t subdivision_, const Color& color, float reflectivity, float transparency, float refractiveIndex) 
+    : Shape(color, reflectivity, transparency, refractiveIndex), subdivision(subdivision_) {
         
     findBoundingVolume(controls);
     Vector3D vertices[(subdivision+1) * (subdivision+1)];
@@ -28,8 +28,8 @@ BezierSurface::BezierSurface(Vector3D* controls, uint32_t subdivision_, const Co
             const Vector3D vertex3 = vertices[index+subdivision+j+1];
             const Vector3D vertex4 = vertices[index+subdivision+j+2];
 
-            triangles.push_back(Triangle(vertex3, vertex2, vertex1, color, reflect, transparency, refractiveIndex));
-            triangles.push_back(Triangle(vertex3, vertex4, vertex2, color, reflect, transparency, refractiveIndex));
+            triangles.push_back(Triangle(vertex3, vertex2, vertex1, color, reflectivity, transparency, refractiveIndex));
+            triangles.push_back(Triangle(vertex3, vertex4, vertex2, color, reflectivity, transparency, refractiveIndex));
         }
         index += subdivision+1;
     }

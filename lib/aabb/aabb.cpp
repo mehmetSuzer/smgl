@@ -1,10 +1,10 @@
 
 #include "aabb.h"
 
-AABB::AABB() : Shape(Color::Black, false, 0.0f, VACUUM_REFRACTIVE_INDEX) {}
+AABB::AABB() : Shape(Color::Black, 0.0f, 0.0f, VACUUM_REFRACTIVE_INDEX) {}
 
-AABB::AABB(const Vector3D& minPoint_, const Vector3D& maxPoint_, const Color& color, bool reflect, float transparency, float refractiveIndex) 
-    : Shape(color, reflect, transparency, refractiveIndex), minPoint(minPoint_), maxPoint(maxPoint_) {
+AABB::AABB(const Vector3D& minPoint_, const Vector3D& maxPoint_, const Color& color, float reflectivity, float transparency, float refractiveIndex) 
+    : Shape(color, reflectivity, transparency, refractiveIndex), minPoint(minPoint_), maxPoint(maxPoint_) {
     const Vector3D difference = maxPoint - minPoint;
     assert(difference.x > EPSILON1 && difference.y > EPSILON1 && difference.z > EPSILON1);
 }

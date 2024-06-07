@@ -8,7 +8,7 @@
 #define DIFFUSE_COEF   0.8f
 #define SPECULAR_COEF  0.5f
 #define SPECULAR_POW   12.0f
-#define AMBIENT_COEF   0.10f
+#define AMBIENT_COEF   0.1f
 
 #define VACUUM_REFRACTIVE_INDEX     1.00000f
 #define AIR_REFRACTIVE_INDEX        1.00026f
@@ -31,13 +31,14 @@ typedef struct {
 class Shape {
 private:
     const Color& color;
-    const bool reflect;
+    const float reflectivity;
     const float transparency;
     const float refractiveIndex;
 
 public:
-    Shape(const Color& color_, bool reflect_, float transparency_, float refractiveIndex_) 
-        : color(color_), reflect(reflect_), transparency(transparency_), refractiveIndex(refractiveIndex_) {
+    Shape(const Color& color_, float reflectivity_, float transparency_, float refractiveIndex_) 
+        : color(color_), reflectivity(reflectivity_), transparency(transparency_), refractiveIndex(refractiveIndex_) {
+        assert(0.0f <= reflectivity_ && reflectivity_ < 1.0f);
         assert(0.0f <= transparency_ && transparency_ < 1.0f);
         assert(refractiveIndex_ >= VACUUM_REFRACTIVE_INDEX);
     }
@@ -46,8 +47,8 @@ public:
         return transparency;
     }
 
-    bool isReflective(void) const {
-        return reflect;
+    float getReflectivity(void) const {
+        return reflectivity;
     }
 
     float getRefractiveIndex(void) const {
