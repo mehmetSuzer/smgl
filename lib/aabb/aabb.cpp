@@ -5,24 +5,21 @@ AABB::AABB() : Shape(Color::Black, false, 0.0f, VACUUM_REFRACTIVE_INDEX) {}
 
 AABB::AABB(const Vector3D& minPoint_, const Vector3D& maxPoint_, const Color& color, bool reflect, float transparency, float refractiveIndex) 
     : Shape(color, reflect, transparency, refractiveIndex), minPoint(minPoint_), maxPoint(maxPoint_) {
-    assert(minPoint.x < maxPoint.x);
-    assert(minPoint.y < maxPoint.y);
-    assert(minPoint.z < maxPoint.z);
+    const Vector3D difference = maxPoint - minPoint;
+    assert(difference.x > EPSILON1 && difference.y > EPSILON1 && difference.z > EPSILON1);
 }
 
 // Use this function to set minPoint if the AABB is initialized with the constructor with no parameters
 void AABB::setMinPoint(const Vector3D& point) {
-    assert(point.x < maxPoint.x);
-    assert(point.y < maxPoint.y);
-    assert(point.z < maxPoint.z);
+    const Vector3D difference = maxPoint - point;
+    assert(difference.x > EPSILON1 && difference.y > EPSILON1 && difference.z > EPSILON1);
     minPoint = point;
 }
 
 // Use this function to set maxPoint if the AABB is initialized with the constructor with no parameters
 void AABB::setMaxPoint(const Vector3D& point) {
-    assert(minPoint.x < point.x);
-    assert(minPoint.y < point.y);
-    assert(minPoint.z < point.z);
+    const Vector3D difference = point - minPoint;
+    assert(difference.x > EPSILON1 && difference.y > EPSILON1 && difference.z > EPSILON1);
     maxPoint = point;
 }
 

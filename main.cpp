@@ -69,21 +69,21 @@ const uint32_t sphereNumber = sizeof(spheres) / sizeof(spheres[0]);
 /* ----------------------------------------------------------------------*/
 
 const AABB aabbs[] = {
-    // AABB(Vector3D(-50.0f, GROUND_LEVEL + EPSILON4, 160.0f), Vector3D(50.0f, GROUND_LEVEL + 20.0f, 170.0f), Color::Red, false, 0.0f, GLASS_REFRACTIVE_INDEX),
-    // AABB(Vector3D(-10.0f, GROUND_LEVEL + EPSILON4, 140.0f), Vector3D(30.0f, GROUND_LEVEL + 90.0f, 155.0f), Color::Blue, false, 0.8f, GLASS_REFRACTIVE_INDEX),
+    AABB(Vector3D(-50.0f, GROUND_LEVEL + EPSILON4, 160.0f), Vector3D(50.0f, GROUND_LEVEL + 20.0f, 170.0f), Color::Red, false, 0.0f, GLASS_REFRACTIVE_INDEX),
+    AABB(Vector3D(-10.0f, GROUND_LEVEL + EPSILON4, 140.0f), Vector3D(30.0f, GROUND_LEVEL + 90.0f, 155.0f), Color::Blue, false, 0.95f, GLASS_REFRACTIVE_INDEX),
 };
 const uint32_t aabbNumber = sizeof(aabbs) / sizeof(aabbs[0]);
 
 /* ----------------------------------------------------------------------*/
 
-const float bezierScalar = 20.0f;
+const float bezierScalar = 16.0f;
 const float bezierRadianX = 0.0f;
 const float bezierRadianY = 0.0f;
 const float bezierRadianZ = 0.0f;
 const uint32_t bezierSubdivision = 4;
 const float bezierTransparency = 0.99f;
 const float bezierRefractiveIndex = GLASS_REFRACTIVE_INDEX;
-const Vector3D bezierPosition = Vector3D(0.0f, GROUND_LEVEL, 160.0f);
+const Vector3D bezierPosition = Vector3D(0.0f, GROUND_LEVEL, 115.0f);
 
 // Initialized in the main function
 std::vector<BezierSurface> bezierVector;
@@ -239,21 +239,17 @@ void traceRay(Ray& ray, Color& color, float incomingRefractiveIndex, uint32_t de
 
             // If there is no total reflection, then calculate the ray and call the function recursively
             if (!totalReflection) {
-                const float sinOutgoingAngle = sinComingAngle / outgoingToIncomingRefractiveIndexRatio;
-                const float cosOutgoingAngle = sqrtf(1.0f - sinOutgoingAngle * sinOutgoingAngle);
+                const Vector3D dirPerpendicularComponentToNormal = ray.dir - closestIntersect.normal * normalDotComingRayDir;
+                const Vector3D refractiveRayDir = 
+                    (-closestIntersect.normal + dirPerpendicularComponentToNormal / outgoingToIncomingRefractiveIndexRatio).normalize();
 
-                const Vector3D refractiveRayDirParallelToNormal = closestIntersect.normal * (-cosOutgoingAngle);
-                const Vector3D refractiveRayDirPerpendicularToNormal = 
-                    (ray.dir - closestIntersect.normal * normalDotComingRayDir) / outgoingToIncomingRefractiveIndexRatio;
-                const Vector3D refractiveRayDir = refractiveRayDirPerpendicularToNormal + refractiveRayDirParallelToNormal;
-
-                Ray refractionRay = {
-                    .origin = closestIntersect.hitLocation, //  + refractiveRayDir * EPSILON3,
+                Ray refractiveRay = {
+                    .origin = closestIntersect.hitLocation + refractiveRayDir * EPSILON3,
                     .dir = refractiveRayDir,
                 };
 
                 // Recursion depth does not increase since we want objects behind a transparent object to contribute more
-                traceRay(refractionRay, color, outgoingRefractiveIndex, depthCount);
+                traceRay(refractiveRay, color, outgoingRefractiveIndex, depthCount);
             }
         }
 
