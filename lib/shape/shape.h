@@ -22,10 +22,13 @@
 // Refractive index of the rendered world
 #define WORLD_REFRACTIVE_INDEX VACUUM_REFRACTIVE_INDEX
 
+class Shape;
+
 typedef struct {
     float t;
     Vector3D hitLocation;
     Vector3D normal;
+    Shape* shape;
 } Intersect;
 
 class Shape {
@@ -36,28 +39,12 @@ private:
     const float refractiveIndex;
 
 public:
-    Shape(const Color& color_, float reflectivity_, float transparency_, float refractiveIndex_) 
-        : color(color_), reflectivity(reflectivity_), transparency(transparency_), refractiveIndex(refractiveIndex_) {
-        assert(0.0f <= reflectivity_ && 0.0f <= transparency_);
-        assert(reflectivity_ + transparency_ < 1.0f);
-        assert(refractiveIndex_ >= VACUUM_REFRACTIVE_INDEX);
-    }
+    Shape(const Color& color_, float reflectivity_, float transparency_, float refractiveIndex_);
 
-    float getTransparency(void) const {
-        return transparency;
-    }
-
-    float getReflectivity(void) const {
-        return reflectivity;
-    }
-
-    float getRefractiveIndex(void) const {
-        return refractiveIndex;
-    }
-
-    const Color& getColor(void) const {
-        return color;
-    }
+    float getTransparency(void) const;
+    float getReflectivity(void) const;
+    float getRefractiveIndex(void) const;
+    const Color& getColor(void) const;
 
     virtual bool intersect(Intersect* intersect, const Ray& ray, float far) const = 0;
 };

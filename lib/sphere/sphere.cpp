@@ -27,6 +27,7 @@ bool Sphere::intersect(Intersect* intersect, const Ray& ray, float far) const {
             rayOriginIsInSphere = true;
         }
         if (intersect != NULL) {
+            intersect->shape = (Shape*)this;
             intersect->t = t;
             intersect->hitLocation = ray.origin + ray.dir * t;
             intersect->normal = (intersect->hitLocation - center).normalize();

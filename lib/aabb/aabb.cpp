@@ -89,6 +89,7 @@ bool AABB::intersect(Intersect* intersect, const Ray& ray, float far) const {
     }
 
     if (intersect != NULL) {
+        intersect->shape = (Shape*)this;
         intersect->t = t;
         intersect->hitLocation = ray.origin + ray.dir * t;
 

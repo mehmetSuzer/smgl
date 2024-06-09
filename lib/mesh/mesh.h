@@ -5,14 +5,15 @@
 #include <vector>
 #include <shape.h>
 
-class Mesh {
+class Mesh : public Shape {
 private:
-    std::vector<Shape*> shapes;
-    Shape* boundingVolume;
+    const std::vector<Shape*>& shapes;
+    const Shape* boundingVolume;
 
 public:
-    Mesh(const std::vector<Shape*>& shapes_, Shape* boundingVolume_);
+    Mesh(const std::vector<Shape*>& shapes_, const Shape* boundingVolume_);
 
+    bool intersect(Intersect* intersect, const Ray& ray, float far) const override;
 };
 
 #endif // __MESH_H__

@@ -22,6 +22,7 @@ bool Triangle::intersect(Intersect* intersect, const Ray& ray, float far) const 
     // If Beta > 0 and Gamma > 0, Beta+Gamma < 1, t > 0, and t < far, the ray intersects the triangle
     if (result.x > EPSILON6 && result.y > EPSILON6 && result.x + result.y < 1.0f && result.z > EPSILON6 && result.z < far) {
         if (intersect != NULL) {
+            intersect->shape = (Shape*)this;
             intersect->t = result.z;
             intersect->hitLocation = ray.origin + ray.dir * intersect->t;
             intersect->normal = normal;

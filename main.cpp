@@ -12,6 +12,7 @@
 #include <camera.h>
 #include <sphere.h>
 #include <bezier.h>
+#include <mesh.h>
 
 #define MAX_RECURSIVE_RAY_TRACING_DEPTH 8UL
 
@@ -27,6 +28,7 @@ const Color& BACKGROUND_COLOR = Color::Black;
 
 Color image[IMAGE_HEIGHT * IMAGE_WIDTH] = {BACKGROUND_COLOR};
 std::vector<Shape*> shapes;
+std::vector<Mesh> meshes;
 
 /* ----------------------------------------------------------------------*/
 
@@ -76,16 +78,18 @@ const AABB aabbs[] = {
 
 /* ----------------------------------------------------------------------*/
 
-const float bezierScalar = 16.0f;
-const float bezierRadianX = 0.0f;
-const float bezierRadianY = 0.0f;
-const float bezierRadianZ = 0.0f;
-const uint32_t bezierSubdivision = 4;
-const Color& bezierColor = Color::Cyan;
-const float bezierReflectivity = 0.0f;
-const float bezierTransparency = 0.99f;
-const float bezierRefractiveIndex = GLASS_REFRACTIVE_INDEX;
-const Vector3D bezierPosition = Vector3D(0.0f, GROUND_LEVEL + 30.0f, 130.0f);
+std::vector<BezierSurface> bezierSurfaces;
+
+const float teapotScale = 16.0f;
+const float teapotRadianX = 0.0f;
+const float teapotRadianY = 0.0f;
+const float teapotRadianZ = 0.0f;
+const uint32_t teapotSubdivision = 4;
+const Color& teapotColor = Color::Cyan;
+const float teapotReflectivity = 0.0f;
+const float teapotTransparency = 0.99f;
+const float teapotRefractiveIndex = GLASS_REFRACTIVE_INDEX;
+const Vector3D teapotPosition = Vector3D(0.0f, GROUND_LEVEL + 30.0f, 130.0f);
 
 /* ----------------------------------------------------------------------*/
 
@@ -139,18 +143,23 @@ void traceRay(const Ray& ray, Color& color, float incomingRefractiveIndex, float
     uint32_t i, j;
     Intersect intersect;
     Intersect closestIntersect = {.t = INFINITY};
-    Shape* closestShape = NULL;
 
     // Check whether the ray intersects with a shape
     for (i = 0; i < shapes.size(); i++) {
         if (shapes[i]->intersect(&intersect, ray, camera.getFar()) && intersect.t < closestIntersect.t) {
-            closestShape = shapes[i];
+            closestIntersect = intersect;
+        }
+    }
+
+    // Check whether the ray intersects with a mesh
+    for (i = 0; i < meshes.size(); i++) {
+        if (meshes[i].intersect(&intersect, ray, camera.getFar()) && intersect.t < closestIntersect.t) {
             closestIntersect = intersect;
         }
     }
 
     // Check if the ray hits to an object
-    if (closestShape != NULL) {
+    if (closestIntersect.shape != NULL) {
         // Add the ambient lighting once
         if (depthCount == 1) {
             color += AMBIENT_COLOR * AMBIENT_COEF;
@@ -174,28 +183,36 @@ void traceRay(const Ray& ray, Color& color, float incomingRefractiveIndex, float
                 }
             }
 
+            // Check if a mesh prevents light rays from hitting to the hit location
+            Intersect lightIntersect;
+            for (j = 0; j < meshes.size() && shadowingShapeTransparency == 1.0f; j++) {
+                if (meshes[j].intersect(&lightIntersect, lightRay, lightInfo.distance)) {
+                    shadowingShapeTransparency =  lightIntersect.shape->getTransparency();
+                }
+            }
+
             // Calculate diffuse and specular light intensity
             const float diffuse = DIFFUSE_COEF * greater(lightInfo.directionToLight.dot(closestIntersect.normal), 0.0f);
             const Vector3D bisector = Vector3D::bisector(lightInfo.directionToLight, -ray.dir);
             const float specular = SPECULAR_COEF * powf(greater(bisector.dot(closestIntersect.normal), 0.0f), SPECULAR_POW);
             
             // Calculate the color that will be added
-            const Color addedColor = closestShape->getColor() * lights[i]->getColor()
+            const Color addedColor = closestIntersect.shape->getColor() * lights[i]->getColor()
                 * ((diffuse + specular) 
-                * lightInfo.intensity                           // As intensity of the light increases, the point looks brighter
-                * coefficientOfPreviousShape                    // As the reflectivity and the transparency of the previous shape increases, the current object gets more visible
-                * shadowingShapeTransparency                    // If an object casts shadow onto the point, the point looks dimmer
-                * (1.0f - closestShape->getTransparency()       // As the transparency of the shape increases, its color gets less visible
-                        - closestShape->getReflectivity()));    // As the reflectivity of the shape increases, its color gets less visible
+                * lightInfo.intensity                                   // As intensity of the light increases, the point looks brighter
+                * coefficientOfPreviousShape                            // As the reflectivity and the transparency of the previous shape increases, the current object gets more visible
+                * shadowingShapeTransparency                            // If an object casts shadow onto the point, the point looks dimmer
+                * (1.0f - closestIntersect.shape->getTransparency()     // As the transparency of the shape increases, its color gets less visible
+                        - closestIntersect.shape->getReflectivity()));  // As the reflectivity of the shape increases, its color gets less visible
             color += addedColor;
         }
 
-        float reflectivePortion = closestShape->getReflectivity();
-        if (closestShape->getTransparency() > 0.0f) {
+        float reflectivePortion = closestIntersect.shape->getReflectivity();
+        if (closestIntersect.shape->getTransparency() > 0.0f) {
             const float normalDotComingRayDir = closestIntersect.normal.dot(ray.dir);
             const float sinComingAngle = sqrtf(1.0f - normalDotComingRayDir * normalDotComingRayDir);
             const float outgoingRefractiveIndex = 
-                (incomingRefractiveIndex == WORLD_REFRACTIVE_INDEX) ? closestShape->getRefractiveIndex() : WORLD_REFRACTIVE_INDEX;
+                (incomingRefractiveIndex == WORLD_REFRACTIVE_INDEX) ? closestIntersect.shape->getRefractiveIndex() : WORLD_REFRACTIVE_INDEX;
             const float outgoingToIncomingRefractiveIndexRatio = outgoingRefractiveIndex / incomingRefractiveIndex;
 
             // If there is no total reflection, then calculate the refractive ray and call the function recursively
@@ -212,11 +229,11 @@ void traceRay(const Ray& ray, Color& color, float incomingRefractiveIndex, float
                     refractiveRay, 
                     color, 
                     outgoingRefractiveIndex, 
-                    coefficientOfPreviousShape * closestShape->getTransparency(), 
+                    coefficientOfPreviousShape * closestIntersect.shape->getTransparency(), 
                     depthCount+1
                 );
             } else { // A total reflection occurs
-                reflectivePortion += closestShape->getTransparency();
+                reflectivePortion += closestIntersect.shape->getTransparency();
             }
         }
 
@@ -285,29 +302,37 @@ int main(int argc, char **argv) {
     std::chrono::_V2::system_clock::time_point start = std::chrono::high_resolution_clock::now();
 
     // Scale, rotate, and translate the cubic bezier vertices that are read from the file
-    std::vector<Vector3D> bezierVertices = readCubicBezierData("data/bezier.txt");
-    for (uint32_t i = 0; i < bezierVertices.size(); i++) {
-        bezierVertices[i] *= bezierScalar;
-        bezierVertices[i].rotate(bezierRadianX, bezierRadianY, bezierRadianZ);
-        bezierVertices[i] += bezierPosition;
+    std::vector<Vector3D> teapotBezierVertices = readCubicBezierData("data/utah_teapot_bezier.txt");
+    for (uint32_t i = 0; i < teapotBezierVertices.size(); i++) {
+        teapotBezierVertices[i] *= teapotScale;
+        teapotBezierVertices[i].rotate(teapotRadianX, teapotRadianY, teapotRadianZ);
+        teapotBezierVertices[i] += teapotPosition;
     }
 
     // 16 consecutive vertices define a cubic bezier surface
-    const uint32_t bezierSurfaceNumber = bezierVertices.size() >> 4; // divide by 16
-    std::vector<BezierSurface> bezierSurfaces; 
-    for (uint32_t i = 0; i < bezierSurfaceNumber; i++) {
-        bezierSurfaces.push_back( 
+    const uint32_t teapotBezierSurfaceNumber = teapotBezierVertices.size() >> 4; // divide by 16
+    std::vector<BezierSurface> teapotBezierSurfaces; 
+    for (uint32_t i = 0; i < teapotBezierSurfaceNumber; i++) {
+        teapotBezierSurfaces.push_back( 
             BezierSurface(
-                bezierVertices.data() + (i << 4), 
-                bezierSubdivision, 
-                bezierColor, 
-                bezierReflectivity, 
-                bezierTransparency, 
-                bezierRefractiveIndex
+                teapotBezierVertices.data() + (i << 4), 
+                teapotSubdivision, 
+                teapotColor, 
+                teapotReflectivity, 
+                teapotTransparency, 
+                teapotRefractiveIndex
             )
         );
     }
-    bezierVertices.clear();
+
+    std::vector<Shape*> teapotMeshShapes;
+    for (uint32_t i = 0; i < teapotBezierSurfaceNumber; i++) {
+        teapotMeshShapes.push_back((Shape*)&teapotBezierSurfaces[i]);
+    }
+
+    const Sphere teapotBoundingVolume = Sphere(teapotPosition, 3.8f * teapotScale, teapotColor, 0.0f, 0.0f, VACUUM_REFRACTIVE_INDEX);
+    meshes.push_back(Mesh(teapotMeshShapes, (Shape*)&teapotBoundingVolume));
+    teapotBezierVertices.clear();
 
     // Move spheres, aabbs, triangles, and bezier surfaces to shapes vector
     for (uint32_t i = 0; i < sizeof(spheres) / sizeof(Sphere); i++) {
@@ -320,7 +345,7 @@ int main(int argc, char **argv) {
         shapes.push_back((Shape*)(triangles+i));
     }
     for (uint32_t i = 0; i < bezierSurfaces.size(); i++) {
-        shapes.push_back((Shape*)(bezierSurfaces.data()+i));
+        shapes.push_back((Shape*)(&bezierSurfaces[i]));
     }
 
     std::cout << "Rendering..." << std::endl;

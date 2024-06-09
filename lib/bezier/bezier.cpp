@@ -115,7 +115,7 @@ bool BezierSurface::intersect(Intersect* intersect, const Ray& ray, float far) c
                 closestIntersect = currentIntersect;
             }
         }
-        if (closestIntersect.t != INFINITY) {
+        if (closestIntersect.t < INFINITY) {
             *intersect = closestIntersect;
             return true;
         } 

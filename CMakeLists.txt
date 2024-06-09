@@ -57,6 +57,7 @@ target_link_libraries(${PROJECT_NAME}
     aabb
     triangle
     sphere
+    shape
     camera
     light
     matrix3x3
