@@ -44,3 +44,8 @@ bool Sphere::intersect(Intersect* intersect, Shape** intersectedShape, const Ray
         return false;
     }
 }   
+
+void Sphere::findAABBMinMaxPoints(Vector3D& minPoint, Vector3D& maxPoint) const {
+    minPoint = center - Vector3D(radius);
+    maxPoint = center + Vector3D(radius);
+}

@@ -17,6 +17,7 @@ public:
     void setMaxPoint(const Vector3D& point);
 
     bool intersect(Intersect* intersect, Shape** intersectedShape, const Ray& ray, float far) const override;
+    void findAABBMinMaxPoints(Vector3D& minPoint, Vector3D& maxPoint) const override;
 };
 
 #endif // __AABB_H__

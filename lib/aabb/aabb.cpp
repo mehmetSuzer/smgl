@@ -111,3 +111,8 @@ bool AABB::intersect(Intersect* intersect, Shape** intersectedShape, const Ray& 
     }
     return true;
 }
+
+void AABB::findAABBMinMaxPoints(Vector3D& minPoint, Vector3D& maxPoint) const {
+    minPoint = AABB::minPoint;
+    maxPoint = AABB::maxPoint;
+}

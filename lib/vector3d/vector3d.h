@@ -28,6 +28,7 @@ public:
     static const Vector3D forward;
 
     Vector3D();
+    Vector3D(float value);
     Vector3D(float x_, float y_, float z_);
     
     Vector3D operator + (const Vector3D& other) const;

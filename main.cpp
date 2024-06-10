@@ -315,8 +315,7 @@ int main(int argc, char **argv) {
     for (uint32_t i = 0; i < teapotBezierSurfaceNumber; i++) {
         teapotMeshShapes.push_back((Shape*)&teapotBezierSurfaces[i]);
     }
-    const Sphere teapotBoundingVolume = Sphere(teapotPosition + Vector3D::up*teapotScale, 3.8f*teapotScale, teapotColor, 0.0f, 0.0f, VACUUM_REFRACTIVE_INDEX);
-    const Mesh teapot = Mesh(teapotMeshShapes, (Shape*)&teapotBoundingVolume);
+    const Mesh teapot = Mesh(teapotMeshShapes);
 
     // Move spheres, aabbs, triangles, and bezier surfaces to shapes vector
     for (uint32_t i = 0; i < sizeof(spheres) / sizeof(Sphere); i++) {

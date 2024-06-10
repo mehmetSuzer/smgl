@@ -47,6 +47,7 @@ public:
     const Color& getColor(void) const;
 
     virtual bool intersect(Intersect* intersect, Shape** intersectedShape, const Ray& ray, float far) const = 0;
+    virtual void findAABBMinMaxPoints(Vector3D& minPoint, Vector3D& maxPoint) const = 0;
 };
 
 #endif // __SHAPE_H__

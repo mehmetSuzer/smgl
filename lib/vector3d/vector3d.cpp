@@ -3,6 +3,8 @@
 
 Vector3D::Vector3D() : x(0.0f), y(0.0f), z(0.0f) {}
 
+Vector3D::Vector3D(float value) : x(value), y(value), z(value) {}
+
 Vector3D::Vector3D(float x_, float y_, float z_) : x(x_), y(y_), z(z_) {}
 
 Vector3D Vector3D::operator + (const Vector3D& other) const {

@@ -3,10 +3,16 @@
 
 BezierSurface::BezierSurface() : Shape(Color::Black, 0.0f, 0.0f, VACUUM_REFRACTIVE_INDEX), subdivision(4) {}
 
-BezierSurface::BezierSurface(const Vector3D* controls, uint32_t subdivision_, const Color& color, float reflectivity, float transparency, float refractiveIndex) 
-    : Shape(color, reflectivity, transparency, refractiveIndex), subdivision(subdivision_) {
+BezierSurface::BezierSurface(const Vector3D* controlPoints_, uint32_t subdivision_, const Color& color, 
+    float reflectivity, float transparency, float refractiveIndex) : Shape(color, reflectivity, transparency, refractiveIndex), 
+    subdivision(subdivision_), controlPoints(controlPoints_) {
         
-    findBoundingVolume(controls);
+    Vector3D minPoint;
+    Vector3D maxPoint;
+    findAABBMinMaxPoints(minPoint, maxPoint);
+    boundingVolume.setMinPoint(minPoint);
+    boundingVolume.setMaxPoint(maxPoint);
+
     Vector3D vertices[(subdivision+1) * (subdivision+1)];
     const float dx = 1.0f / subdivision;
     uint32_t index = 0;
@@ -14,7 +20,7 @@ BezierSurface::BezierSurface(const Vector3D* controls, uint32_t subdivision_, co
     // Sample the vertices of (subdivision X subdivision) many surfaces
     for (float u = 0; u <= 1.0f; u += dx) {
         for (float v = 0; v <= 1.0f; v += dx) {
-            vertices[index++] = getPoint(controls, u, v); 
+            vertices[index++] = getPoint(u, v); 
         }
     }
 
@@ -46,7 +52,7 @@ void BezierSurface::generateControlPointScalars(float* xVector, float x) const {
 }
 
 // Returns the surface point for given control points, u, and v
-Vector3D BezierSurface::getPoint(const Vector3D* controls, float u, float v) const {
+Vector3D BezierSurface::getPoint(float u, float v) const {
     float uVector[4];
     float vVector[4];
     generateControlPointScalars(uVector, u);
@@ -55,43 +61,11 @@ Vector3D BezierSurface::getPoint(const Vector3D* controls, float u, float v) con
     Vector3D point = Vector3D(0.0f, 0.0f, 0.0f);
     for (uint32_t i = 0; i < 4; i++) {
         for (uint32_t j = 0; j < 4; j++) {
-            point += controls[(i<<2)+j] * (uVector[i] * vVector[j]);
+            point += controlPoints[(i<<2)+j] * (uVector[i] * vVector[j]);
         }
     }
 
     return point;
-}
-
-// Finds the min and max points of the Axis Aligned Bouding Box of the surface
-void BezierSurface::findBoundingVolume(const Vector3D* controls) {
-    Vector3D minPoint = Vector3D(INFINITY, INFINITY, INFINITY);
-    Vector3D maxPoint = Vector3D(-INFINITY, -INFINITY, -INFINITY);
-
-    for (uint32_t i = 0; i < 16; i++) {
-        if (controls[i].x < minPoint.x) {
-            minPoint.x = controls[i].x;
-        } 
-        if (controls[i].x > maxPoint.x) {
-            maxPoint.x = controls[i].x;
-        }
-
-        if (controls[i].y < minPoint.y) {
-            minPoint.y = controls[i].y;
-        } 
-        if (controls[i].y > maxPoint.y) {
-            maxPoint.y = controls[i].y;
-        }
-
-        if (controls[i].z < minPoint.z) {
-            minPoint.z = controls[i].z;
-        } 
-        if (controls[i].z > maxPoint.z) {
-            maxPoint.z = controls[i].z;
-        }
-    }
-
-    boundingVolume.setMinPoint(minPoint);
-    boundingVolume.setMaxPoint(maxPoint);
 }
 
 // Checks whether the ray intersects the surface and finds the intersection details
@@ -127,4 +101,32 @@ bool BezierSurface::intersect(Intersect* intersect, Shape** intersectedShape, co
     }
 
     return false;
+}
+
+void BezierSurface::findAABBMinMaxPoints(Vector3D& minPoint, Vector3D& maxPoint) const {
+    minPoint = Vector3D(INFINITY);
+    maxPoint = Vector3D(-INFINITY);
+
+    for (uint32_t i = 0; i < 16; i++) {
+        if (controlPoints[i].x < minPoint.x) {
+            minPoint.x = controlPoints[i].x;
+        } 
+        if (controlPoints[i].x > maxPoint.x) {
+            maxPoint.x = controlPoints[i].x;
+        }
+
+        if (controlPoints[i].y < minPoint.y) {
+            minPoint.y = controlPoints[i].y;
+        } 
+        if (controlPoints[i].y > maxPoint.y) {
+            maxPoint.y = controlPoints[i].y;
+        }
+
+        if (controlPoints[i].z < minPoint.z) {
+            minPoint.z = controlPoints[i].z;
+        } 
+        if (controlPoints[i].z > maxPoint.z) {
+            maxPoint.z = controlPoints[i].z;
+        }
+    }
 }

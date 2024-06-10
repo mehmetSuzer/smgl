@@ -14,6 +14,7 @@ public:
     Sphere(const Vector3D& center_, float radius_, const Color& color, float reflectivity, float transparency, float refractiveIndex);
 
     bool intersect(Intersect* intersect, Shape** intersectedShape, const Ray& ray, float far) const override;
+    void findAABBMinMaxPoints(Vector3D& minPoint, Vector3D& maxPoint) const override;
 };
 
 #endif // __SPHERE_H__
