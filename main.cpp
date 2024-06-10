@@ -77,8 +77,6 @@ const AABB aabbs[] = {
 
 /* ----------------------------------------------------------------------*/
 
-std::vector<BezierSurface> bezierSurfaces;
-
 const float teapotScale = 20.0f;
 const float teapotRadianX = 0.0f;
 const float teapotRadianY = 0.0f;
@@ -165,6 +163,7 @@ void traceRay(const Ray& ray, Color& color, float incomingRefractiveIndex, float
             if (lightInfo.distance == -INFINITY) { // Light does not hit to the hit location
                 continue;
             }
+            
             const Ray lightRay = {
                 .origin = closestIntersect.hitLocation + closestIntersect.normal * EPSILON3,
                 .dir = lightInfo.directionToLight,
@@ -294,11 +293,9 @@ int main(int argc, char **argv) {
         teapotBezierVertices[i] += teapotPosition;
     }
 
-    // 16 consecutive vertices define a cubic bezier surface
-    const uint32_t teapotBezierSurfaceNumber = teapotBezierVertices.size() >> 4; // divide by 16
-    std::vector<BezierSurface> teapotBezierSurfaces; 
-    for (uint32_t i = 0; i < teapotBezierSurfaceNumber; i++) {
-        teapotBezierSurfaces.push_back( 
+    std::vector<BezierSurface> teapotBodyBezierSurfaces; 
+    for (uint32_t i = 0; i < 12; i++) { // Body
+        teapotBodyBezierSurfaces.push_back( 
             BezierSurface(
                 teapotBezierVertices.data() + (i << 4), 
                 teapotSubdivision, 
@@ -309,15 +306,73 @@ int main(int argc, char **argv) {
             )
         );
     }
-    teapotBezierVertices.clear();
-
-    std::vector<Shape*> teapotMeshShapes;
-    for (uint32_t i = 0; i < teapotBezierSurfaceNumber; i++) {
-        teapotMeshShapes.push_back((Shape*)&teapotBezierSurfaces[i]);
+    std::vector<Shape*> teapotBodyShapes;
+    for (uint32_t i = 0; i < 12; i++) {
+        teapotBodyShapes.push_back((Shape*)&teapotBodyBezierSurfaces[i]);
     }
-    const Mesh teapot = Mesh(teapotMeshShapes);
+    const Mesh teapotBody = Mesh(teapotBodyShapes);
 
-    // Move spheres, aabbs, triangles, and bezier surfaces to shapes vector
+    std::vector<BezierSurface> teapotHandleBezierSurfaces; 
+    for (uint32_t i = 12; i < 16; i++) {
+        teapotHandleBezierSurfaces.push_back( 
+            BezierSurface(
+                teapotBezierVertices.data() + (i << 4), 
+                teapotSubdivision, 
+                teapotColor, 
+                teapotReflectivity, 
+                teapotTransparency, 
+                teapotRefractiveIndex
+            )
+        );
+    }
+    std::vector<Shape*> teapotHandleShapes;
+    for (uint32_t i = 0; i < 4; i++) {
+        teapotHandleShapes.push_back((Shape*)&teapotHandleBezierSurfaces[i]);
+    }
+    const Mesh teapotHandle = Mesh(teapotHandleShapes);
+
+    std::vector<BezierSurface> teapotSpoutBezierSurfaces; 
+    for (uint32_t i = 16; i < 20; i++) {
+        teapotSpoutBezierSurfaces.push_back( 
+            BezierSurface(
+                teapotBezierVertices.data() + (i << 4), 
+                teapotSubdivision, 
+                teapotColor, 
+                teapotReflectivity, 
+                teapotTransparency, 
+                teapotRefractiveIndex
+            )
+        );
+    }
+    std::vector<Shape*> teapotSpoutShapes;
+    for (uint32_t i = 0; i < 4; i++) {
+        teapotSpoutShapes.push_back((Shape*)&teapotSpoutBezierSurfaces[i]);
+    }
+    const Mesh teapotSpout = Mesh(teapotSpoutShapes);
+
+    std::vector<BezierSurface> teapotLidBezierSurfaces; 
+    for (uint32_t i = 20; i < 28; i++) {
+        teapotLidBezierSurfaces.push_back( 
+            BezierSurface(
+                teapotBezierVertices.data() + (i << 4), 
+                teapotSubdivision, 
+                teapotColor, 
+                teapotReflectivity, 
+                teapotTransparency, 
+                teapotRefractiveIndex
+            )
+        );
+    }
+    std::vector<Shape*> teapotLidShapes;
+    for (uint32_t i = 0; i < 8; i++) {
+        teapotLidShapes.push_back((Shape*)&teapotLidBezierSurfaces[i]);
+    }
+    const Mesh teapotLid = Mesh(teapotLidShapes);
+
+    const std::vector<Shape*> teapotShapes = std::vector<Shape*>{(Shape*)&teapotBody, (Shape*)&teapotHandle, (Shape*)&teapotSpout, (Shape*)&teapotLid};
+    const Mesh teapot = Mesh(teapotShapes);
+
+    // Move all shapes to the Shapes vector
     for (uint32_t i = 0; i < sizeof(spheres) / sizeof(Sphere); i++) {
         shapes.push_back((Shape*)(spheres+i));
     }
@@ -326,9 +381,6 @@ int main(int argc, char **argv) {
     }
     for (uint32_t i = 0; i < sizeof(triangles) / sizeof(Triangle); i++) {
         shapes.push_back((Shape*)(triangles+i));
-    }
-    for (uint32_t i = 0; i < bezierSurfaces.size(); i++) {
-        shapes.push_back((Shape*)(&bezierSurfaces[i]));
     }
     shapes.push_back((Shape*)&teapot);
 
@@ -349,7 +401,7 @@ int main(int argc, char **argv) {
 
     // Write the image
     std::cout << "Writing image.png..." << std::endl;
-    stbi_write_png("image.png", IMAGE_WIDTH, IMAGE_HEIGHT, 3, image, 3*IMAGE_WIDTH);
+    stbi_write_png("image.png", IMAGE_WIDTH, IMAGE_HEIGHT, 3, image, sizeof(Color)*IMAGE_WIDTH);
 
     // Stop timing
     std::chrono::_V2::system_clock::time_point end = std::chrono::high_resolution_clock::now();
