@@ -9,7 +9,7 @@ Sphere::Sphere(const Vector3D& center_, float radius_, const Color& color, float
 }
 
 // Checks whether the ray intersects the sphere and finds the intersection details
-bool Sphere::intersect(Intersect* intersect, const Ray& ray, float far) const {
+bool Sphere::intersect(Intersect* intersect, Shape** intersectedShape, const Ray& ray, float far) const {
     const Vector3D centerToOrigin = ray.origin - center;
     const float dotProduct = centerToOrigin.dot(ray.dir);
     const float quarterDiscriminant = dotProduct*dotProduct - centerToOrigin.magSquare() + radius*radius;
@@ -17,6 +17,7 @@ bool Sphere::intersect(Intersect* intersect, const Ray& ray, float far) const {
         const float sqrtQuarterDiscriminant = sqrtf(quarterDiscriminant);
         float t = -dotProduct - sqrtQuarterDiscriminant; // Choose the closer intersection first
         bool rayOriginIsInSphere = false;
+        
         if (t >= far) { // Check whether the ray is in the allowed range
             return false;
         } else if (t <= EPSILON6) {
@@ -26,8 +27,11 @@ bool Sphere::intersect(Intersect* intersect, const Ray& ray, float far) const {
             }
             rayOriginIsInSphere = true;
         }
+
+        if (intersectedShape != NULL) {
+            *intersectedShape = (Shape*)this;
+        }
         if (intersect != NULL) {
-            intersect->shape = (Shape*)this;
             intersect->t = t;
             intersect->hitLocation = ray.origin + ray.dir * t;
             intersect->normal = (intersect->hitLocation - center).normalize();

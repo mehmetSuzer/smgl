@@ -23,7 +23,7 @@ void AABB::setMaxPoint(const Vector3D& point) {
     maxPoint = point;
 }
 
-bool AABB::intersect(Intersect* intersect, const Ray& ray, float far) const {
+bool AABB::intersect(Intersect* intersect, Shape** intersectedShape, const Ray& ray, float far) const {
     // If the ray is perpendicular to an axis, then don't use this axis to calculate t
     const bool perpendicularToX = (abs(ray.dir.x) < EPSILON6); 
     const bool perpendicularToY = (abs(ray.dir.y) < EPSILON6); 
@@ -88,8 +88,10 @@ bool AABB::intersect(Intersect* intersect, const Ray& ray, float far) const {
         rayOriginIsInAABB = true;
     }
 
+    if (intersectedShape != NULL) {
+        *intersectedShape = (Shape*)this;
+    }
     if (intersect != NULL) {
-        intersect->shape = (Shape*)this;
         intersect->t = t;
         intersect->hitLocation = ray.origin + ray.dir * t;
 

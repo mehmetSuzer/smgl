@@ -3,18 +3,17 @@
 
 BezierSurface::BezierSurface() : Shape(Color::Black, 0.0f, 0.0f, VACUUM_REFRACTIVE_INDEX), subdivision(4) {}
 
-BezierSurface::BezierSurface(Vector3D* controls, uint32_t subdivision_, const Color& color, float reflectivity, float transparency, float refractiveIndex) 
+BezierSurface::BezierSurface(const Vector3D* controls, uint32_t subdivision_, const Color& color, float reflectivity, float transparency, float refractiveIndex) 
     : Shape(color, reflectivity, transparency, refractiveIndex), subdivision(subdivision_) {
         
     findBoundingVolume(controls);
     Vector3D vertices[(subdivision+1) * (subdivision+1)];
+    const float dx = 1.0f / subdivision;
     uint32_t index = 0;
 
     // Sample the vertices of (subdivision X subdivision) many surfaces
-    for (uint32_t i = 0; i <= subdivision; i++) {
-        float u = static_cast<float>(i) / subdivision;
-        for (uint32_t j = 0; j <= subdivision; j++) {
-            float v = static_cast<float>(j) / subdivision;
+    for (float u = 0; u <= 1.0f; u += dx) {
+        for (float v = 0; v <= 1.0f; v += dx) {
             vertices[index++] = getPoint(controls, u, v); 
         }
     }
@@ -96,27 +95,33 @@ void BezierSurface::findBoundingVolume(const Vector3D* controls) {
 }
 
 // Checks whether the ray intersects the surface and finds the intersection details
-bool BezierSurface::intersect(Intersect* intersect, const Ray& ray, float far) const {
-    if (!boundingVolume.intersect(NULL, ray, far)) {
+bool BezierSurface::intersect(Intersect* intersect, Shape** intersectedShape, const Ray& ray, float far) const {
+    if (!boundingVolume.intersect(NULL, NULL, ray, far)) {
         return false;
     }
 
     if (intersect == NULL) {
         for (uint32_t i = 0; i < triangles.size(); i++) {
-            if (triangles[i].intersect(NULL, ray, far)) {
+            if (triangles[i].intersect(NULL, intersectedShape, ray, far)) {
                 return true;
             }
         }
     } else {
         Intersect closestIntersect = {.t = INFINITY};
         Intersect currentIntersect;
+        Shape* closestShape = NULL;
+        Shape* currentShape;
+
         for (uint32_t i = 0; i < triangles.size(); i++) {
-            if (triangles[i].intersect(&currentIntersect, ray, far) && currentIntersect.t < closestIntersect.t) {
+            if (triangles[i].intersect(&currentIntersect, &currentShape, ray, far) && currentIntersect.t < closestIntersect.t) {
                 closestIntersect = currentIntersect;
+                closestShape = currentShape;
             }
         }
-        if (closestIntersect.t < INFINITY) {
+        
+        if (closestShape != NULL) {
             *intersect = closestIntersect;
+            *intersectedShape = closestShape;
             return true;
         } 
     }

@@ -14,7 +14,7 @@
 #include <bezier.h>
 #include <mesh.h>
 
-#define MAX_RECURSIVE_RAY_TRACING_DEPTH 8UL
+#define MAX_RECURSIVE_RAY_TRACING_DEPTH 6UL
 
 #define IMAGE_HEIGHT  840UL
 #define IMAGE_WIDTH   840UL
@@ -28,17 +28,16 @@ const Color& BACKGROUND_COLOR = Color::Black;
 
 Color image[IMAGE_HEIGHT * IMAGE_WIDTH] = {BACKGROUND_COLOR};
 std::vector<Shape*> shapes;
-std::vector<Mesh> meshes;
 
 /* ----------------------------------------------------------------------*/
 
 const Vector3D vertices[] = {
             //          X                     Y                           Z
-    Vector3D(60.0f,                     GROUND_LEVEL,                  220.0f), // pyramid
-    Vector3D(60.0f + 40.0f*sqrtf(2.0f), GROUND_LEVEL,                  220.0f + 40.0f*sqrtf(2.0f)),
-    Vector3D(60.0f,                     GROUND_LEVEL,                  220.0f + 80.0f*sqrtf(2.0f)),
-    Vector3D(60.0f - 40.0f*sqrtf(2.0f), GROUND_LEVEL,                  220.0f + 40.0f*sqrtf(2.0f)),
-    Vector3D(60.0f,                     GROUND_LEVEL + 50*sqrtf(2.0f), 220.0f + 40.0f*sqrtf(2.0f)),
+    Vector3D(60.0f,                     GROUND_LEVEL,                  180.0f), // pyramid
+    Vector3D(60.0f + 40.0f*sqrtf(2.0f), GROUND_LEVEL,                  180.0f + 40.0f*sqrtf(2.0f)),
+    Vector3D(60.0f,                     GROUND_LEVEL,                  180.0f + 80.0f*sqrtf(2.0f)),
+    Vector3D(60.0f - 40.0f*sqrtf(2.0f), GROUND_LEVEL,                  180.0f + 40.0f*sqrtf(2.0f)),
+    Vector3D(60.0f,                     GROUND_LEVEL + 50*sqrtf(2.0f), 180.0f + 40.0f*sqrtf(2.0f)),
 
     Vector3D(0.0f,                      GROUND_LEVEL,                  -100.0f), // plane
     Vector3D(-1000.0f,                  GROUND_LEVEL,                  1000.0f),
@@ -47,7 +46,7 @@ const Vector3D vertices[] = {
 
 /* ----------------------------------------------------------------------*/
 
-const float pyramidReflectivity = 0.0f;
+const float pyramidReflectivity = 0.2f;
 const float pyramidTransparency = 0.0f;
 const Triangle triangles[] = {
     Triangle(vertices[0], vertices[1], vertices[4], Color::Cyan, pyramidReflectivity, pyramidTransparency, GLASS_REFRACTIVE_INDEX), // pyramid side surfaces
@@ -64,7 +63,7 @@ const Triangle triangles[] = {
 /* ----------------------------------------------------------------------*/
 
 const Sphere spheres[] = {
-    Sphere(Vector3D(-50.0f, GROUND_LEVEL + 50.0f, 220.0f), 50.0f, Color::Yellow, 0.25f, 0.0f, GLASS_REFRACTIVE_INDEX),
+    Sphere(Vector3D(-30.0f, GROUND_LEVEL + 50.0f, 200.0f), 50.0f, Color::Yellow, 0.3f, 0.0f, GLASS_REFRACTIVE_INDEX),
     // Sphere(Vector3D(50.0f, GROUND_LEVEL + 50.0f, 220.0f), 50.0f, Color::Green, 0.4f, 0.0f, GLASS_REFRACTIVE_INDEX),
     // Sphere(Vector3D(0.0f, GROUND_LEVEL + 20.0f, 120.0f), 20.0f, Color::Blue, 0.0f, 0.99f, GLASS_REFRACTIVE_INDEX),
 };
@@ -73,14 +72,14 @@ const Sphere spheres[] = {
 
 const AABB aabbs[] = {
     // AABB(Vector3D(-50.0f, GROUND_LEVEL + EPSILON4, 160.0f), Vector3D(-30.0f, GROUND_LEVEL + 10.0f, 170.0f), Color::Green, 0.0f, 0.0f, GLASS_REFRACTIVE_INDEX),
-    AABB(Vector3D(-70.0f, GROUND_LEVEL + EPSILON4, 160.0f), Vector3D(70.0f, GROUND_LEVEL + 90.0f, 170.0f), Color::Blue, 0.0f, 0.99f, GLASS_REFRACTIVE_INDEX),
+    // AABB(Vector3D(20.0f, GROUND_LEVEL + EPSILON4, 90.0f), Vector3D(30.0f, GROUND_LEVEL + 90.0f, 100.0f), Color::Blue, 0.0f, 0.99f, GLASS_REFRACTIVE_INDEX),
 };
 
 /* ----------------------------------------------------------------------*/
 
 std::vector<BezierSurface> bezierSurfaces;
 
-const float teapotScale = 16.0f;
+const float teapotScale = 20.0f;
 const float teapotRadianX = 0.0f;
 const float teapotRadianY = 0.0f;
 const float teapotRadianZ = 0.0f;
@@ -89,12 +88,12 @@ const Color& teapotColor = Color::Cyan;
 const float teapotReflectivity = 0.0f;
 const float teapotTransparency = 0.99f;
 const float teapotRefractiveIndex = GLASS_REFRACTIVE_INDEX;
-const Vector3D teapotPosition = Vector3D(0.0f, GROUND_LEVEL + 30.0f, 130.0f);
+const Vector3D teapotPosition = Vector3D(0.0f, GROUND_LEVEL + 10.0f, 140.0f);
 
 /* ----------------------------------------------------------------------*/
 
 const PointLight pointLight = PointLight(
-    Vector3D(-40.0f, GROUND_LEVEL + 100.0f, 0.0f), 
+    Vector3D(0.0f, GROUND_LEVEL + 120.0f, 80.0f), 
     Color::White, 
     2E-5f, 1E-5f
 );
@@ -141,25 +140,21 @@ void traceRay(const Ray& ray, Color& color, float incomingRefractiveIndex, float
     }
 
     uint32_t i, j;
-    Intersect intersect;
     Intersect closestIntersect = {.t = INFINITY};
+    Intersect currentIntersect;
+    Shape* closestShape = NULL;
+    Shape* currentShape;
 
     // Check whether the ray intersects with a shape
     for (i = 0; i < shapes.size(); i++) {
-        if (shapes[i]->intersect(&intersect, ray, camera.getFar()) && intersect.t < closestIntersect.t) {
-            closestIntersect = intersect;
-        }
-    }
-
-    // Check whether the ray intersects with a mesh
-    for (i = 0; i < meshes.size(); i++) {
-        if (meshes[i].intersect(&intersect, ray, camera.getFar()) && intersect.t < closestIntersect.t) {
-            closestIntersect = intersect;
+        if (shapes[i]->intersect(&currentIntersect, &currentShape, ray, camera.getFar()) && currentIntersect.t < closestIntersect.t) {
+            closestIntersect = currentIntersect;
+            closestShape = currentShape;
         }
     }
 
     // Check if the ray hits to an object
-    if (closestIntersect.shape != NULL) {
+    if (closestShape != NULL) {
         // Add the ambient lighting once
         if (depthCount == 1) {
             color += AMBIENT_COLOR * AMBIENT_COEF;
@@ -174,45 +169,35 @@ void traceRay(const Ray& ray, Color& color, float incomingRefractiveIndex, float
                 .origin = closestIntersect.hitLocation + closestIntersect.normal * EPSILON3,
                 .dir = lightInfo.directionToLight,
             };
-            float shadowingShapeTransparency = 1.0f;
 
-            // Check if a shape prevents light rays from hitting to the hit location
-            for (j = 0; j < shapes.size() && shadowingShapeTransparency == 1.0f; j++) {
-                if (shapes[j]->intersect(NULL, lightRay, lightInfo.distance)) {
-                    shadowingShapeTransparency = shapes[j]->getTransparency();
-                }
+            // Check if a shape casts a shadow onto the point
+            Shape* shadowingShape = NULL;
+            for (j = 0; j < shapes.size() && shadowingShape == NULL; j++) {
+                shapes[j]->intersect(NULL, &shadowingShape, lightRay, lightInfo.distance);
             }
-
-            // Check if a mesh prevents light rays from hitting to the hit location
-            Intersect lightIntersect;
-            for (j = 0; j < meshes.size() && shadowingShapeTransparency == 1.0f; j++) {
-                if (meshes[j].intersect(&lightIntersect, lightRay, lightInfo.distance)) {
-                    shadowingShapeTransparency =  lightIntersect.shape->getTransparency();
-                }
-            }
+            const float shadowingShapeTransparency = (shadowingShape != NULL) ? shadowingShape->getTransparency() : WORLD_TRANSPARENCY;
 
             // Calculate diffuse and specular light intensity
             const float diffuse = DIFFUSE_COEF * greater(lightInfo.directionToLight.dot(closestIntersect.normal), 0.0f);
             const Vector3D bisector = Vector3D::bisector(lightInfo.directionToLight, -ray.dir);
             const float specular = SPECULAR_COEF * powf(greater(bisector.dot(closestIntersect.normal), 0.0f), SPECULAR_POW);
-            
-            // Calculate the color that will be added
-            const Color addedColor = closestIntersect.shape->getColor() * lights[i]->getColor()
+                        
+            // Update the color
+            color += closestShape->getColor() * lights[i]->getColor()
                 * ((diffuse + specular) 
-                * lightInfo.intensity                                   // As intensity of the light increases, the point looks brighter
-                * coefficientOfPreviousShape                            // As the reflectivity and the transparency of the previous shape increases, the current object gets more visible
-                * shadowingShapeTransparency                            // If an object casts shadow onto the point, the point looks dimmer
-                * (1.0f - closestIntersect.shape->getTransparency()     // As the transparency of the shape increases, its color gets less visible
-                        - closestIntersect.shape->getReflectivity()));  // As the reflectivity of the shape increases, its color gets less visible
-            color += addedColor;
+                * lightInfo.intensity                         // As intensity of the light increases, the point looks brighter
+                * coefficientOfPreviousShape                  // As the reflectivity and the transparency of the previous shape increases, the current object gets more visible
+                * shadowingShapeTransparency                  // If an object casts shadow onto the point, the point looks dimmer
+                * (1.0f - closestShape->getTransparency()     // As the transparency of the shape increases, its color gets less visible
+                        - closestShape->getReflectivity()));  // As the reflectivity of the shape increases, its color gets less visible
         }
 
-        float reflectivePortion = closestIntersect.shape->getReflectivity();
-        if (closestIntersect.shape->getTransparency() > 0.0f) {
+        float reflectivePortion = closestShape->getReflectivity();
+        if (closestShape->getTransparency() > 0.0f) {
             const float normalDotComingRayDir = closestIntersect.normal.dot(ray.dir);
             const float sinComingAngle = sqrtf(1.0f - normalDotComingRayDir * normalDotComingRayDir);
             const float outgoingRefractiveIndex = 
-                (incomingRefractiveIndex == WORLD_REFRACTIVE_INDEX) ? closestIntersect.shape->getRefractiveIndex() : WORLD_REFRACTIVE_INDEX;
+                (incomingRefractiveIndex == WORLD_REFRACTIVE_INDEX) ? closestShape->getRefractiveIndex() : WORLD_REFRACTIVE_INDEX;
             const float outgoingToIncomingRefractiveIndexRatio = outgoingRefractiveIndex / incomingRefractiveIndex;
 
             // If there is no total reflection, then calculate the refractive ray and call the function recursively
@@ -229,11 +214,11 @@ void traceRay(const Ray& ray, Color& color, float incomingRefractiveIndex, float
                     refractiveRay, 
                     color, 
                     outgoingRefractiveIndex, 
-                    coefficientOfPreviousShape * closestIntersect.shape->getTransparency(), 
+                    coefficientOfPreviousShape * closestShape->getTransparency(), 
                     depthCount+1
                 );
             } else { // A total reflection occurs
-                reflectivePortion += closestIntersect.shape->getTransparency();
+                reflectivePortion += closestShape->getTransparency();
             }
         }
 
@@ -324,15 +309,14 @@ int main(int argc, char **argv) {
             )
         );
     }
+    teapotBezierVertices.clear();
 
     std::vector<Shape*> teapotMeshShapes;
     for (uint32_t i = 0; i < teapotBezierSurfaceNumber; i++) {
         teapotMeshShapes.push_back((Shape*)&teapotBezierSurfaces[i]);
     }
-
-    const Sphere teapotBoundingVolume = Sphere(teapotPosition, 3.8f * teapotScale, teapotColor, 0.0f, 0.0f, VACUUM_REFRACTIVE_INDEX);
-    meshes.push_back(Mesh(teapotMeshShapes, (Shape*)&teapotBoundingVolume));
-    teapotBezierVertices.clear();
+    const Sphere teapotBoundingVolume = Sphere(teapotPosition + Vector3D::up*teapotScale, 3.8f*teapotScale, teapotColor, 0.0f, 0.0f, VACUUM_REFRACTIVE_INDEX);
+    const Mesh teapot = Mesh(teapotMeshShapes, (Shape*)&teapotBoundingVolume);
 
     // Move spheres, aabbs, triangles, and bezier surfaces to shapes vector
     for (uint32_t i = 0; i < sizeof(spheres) / sizeof(Sphere); i++) {
@@ -347,6 +331,7 @@ int main(int argc, char **argv) {
     for (uint32_t i = 0; i < bezierSurfaces.size(); i++) {
         shapes.push_back((Shape*)(&bezierSurfaces[i]));
     }
+    shapes.push_back((Shape*)&teapot);
 
     std::cout << "Rendering..." << std::endl;
 

@@ -18,9 +18,9 @@ private:
 
 public:
     BezierSurface();
-    BezierSurface(Vector3D* controls, uint32_t subdivision_, const Color& color, float reflectivity, float transparency, float refractiveIndex);
+    BezierSurface(const Vector3D* controls, uint32_t subdivision_, const Color& color, float reflectivity, float transparency, float refractiveIndex);
 
-    bool intersect(Intersect* intersect, const Ray& ray, float far) const override;
+    bool intersect(Intersect* intersect, Shape** intersectedShape, const Ray& ray, float far) const override;
 };
 
 #endif // __BEZIER_H__

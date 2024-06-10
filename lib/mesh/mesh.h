@@ -13,7 +13,7 @@ private:
 public:
     Mesh(const std::vector<Shape*>& shapes_, const Shape* boundingVolume_);
 
-    bool intersect(Intersect* intersect, const Ray& ray, float far) const override;
+    bool intersect(Intersect* intersect, Shape** intersectedShape, const Ray& ray, float far) const override;
 };
 
 #endif // __MESH_H__

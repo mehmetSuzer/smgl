@@ -92,7 +92,7 @@ Vector3D Vector3D::cross(const Vector3D& other) const {
 }
 
 void Vector3D::rotateX(float radian) {
-    if (abs(radian) < EPSILON5) {
+    if (abs(radian) > EPSILON5) {
         const float cosAngle = cosf(radian);
         const float sinAngle = sinf(radian);
         const float new_y = y*cosAngle - z*sinAngle;
@@ -104,7 +104,7 @@ void Vector3D::rotateX(float radian) {
 }
 
 void Vector3D::rotateY(float radian) {
-    if (abs(radian) < EPSILON5) {
+    if (abs(radian) > EPSILON5) {
         const float cosAngle = cosf(radian);
         const float sinAngle = sinf(radian);
         const float new_x = x*cosAngle - z*sinAngle;
@@ -116,7 +116,7 @@ void Vector3D::rotateY(float radian) {
 }
 
 void Vector3D::rotateZ(float radian) {
-    if (abs(radian) < EPSILON5) {
+    if (abs(radian) > EPSILON5) {
         const float cosAngle = cosf(radian);
         const float sinAngle = sinf(radian);
         const float new_x = x*cosAngle - y*sinAngle;

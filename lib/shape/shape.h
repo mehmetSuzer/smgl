@@ -22,13 +22,13 @@
 // Refractive index of the rendered world
 #define WORLD_REFRACTIVE_INDEX VACUUM_REFRACTIVE_INDEX
 
-class Shape;
+// Transparency of the rendered world
+#define WORLD_TRANSPARENCY 1.0f
 
 typedef struct {
     float t;
     Vector3D hitLocation;
     Vector3D normal;
-    Shape* shape;
 } Intersect;
 
 class Shape {
@@ -46,7 +46,7 @@ public:
     float getRefractiveIndex(void) const;
     const Color& getColor(void) const;
 
-    virtual bool intersect(Intersect* intersect, const Ray& ray, float far) const = 0;
+    virtual bool intersect(Intersect* intersect, Shape** intersectedShape, const Ray& ray, float far) const = 0;
 };
 
 #endif // __SHAPE_H__
