@@ -15,6 +15,7 @@
 #include <mesh.h>
 
 #define MAX_RECURSIVE_RAY_TRACING_DEPTH 6UL
+#define MAX_SHAPE_COUNT 100UL
 
 #define IMAGE_HEIGHT  840UL
 #define IMAGE_WIDTH   840UL
@@ -27,7 +28,9 @@ const Color& AMBIENT_COLOR = Color::White;
 const Color& BACKGROUND_COLOR = Color::Black;
 
 Color image[IMAGE_HEIGHT * IMAGE_WIDTH] = {BACKGROUND_COLOR};
-std::vector<Shape*> shapes;
+
+Shape* shapes[MAX_SHAPE_COUNT];
+uint32_t shapeNumber = 0;
 
 /* ----------------------------------------------------------------------*/
 
@@ -144,7 +147,7 @@ void traceRay(const Ray& ray, Color& color, float incomingRefractiveIndex, float
     Shape* currentShape;
 
     // Check whether the ray intersects with a shape
-    for (i = 0; i < shapes.size(); i++) {
+    for (i = 0; i < shapeNumber; i++) {
         if (shapes[i]->intersect(&currentIntersect, &currentShape, ray, camera.getFar()) && currentIntersect.t < closestIntersect.t) {
             closestIntersect = currentIntersect;
             closestShape = currentShape;
@@ -171,7 +174,7 @@ void traceRay(const Ray& ray, Color& color, float incomingRefractiveIndex, float
 
             // Check if a shape casts a shadow onto the point
             Shape* shadowingShape = NULL;
-            for (j = 0; j < shapes.size() && shadowingShape == NULL; j++) {
+            for (j = 0; j < shapeNumber && shadowingShape == NULL; j++) {
                 shapes[j]->intersect(NULL, &shadowingShape, lightRay, lightInfo.distance);
             }
             const float shadowingShapeTransparency = (shadowingShape != NULL) ? shadowingShape->getTransparency() : WORLD_TRANSPARENCY;
@@ -241,43 +244,41 @@ void traceRay(const Ray& ray, Color& color, float incomingRefractiveIndex, float
 }
 
 // Reads the cubic beziers and returns them in a vector
-std::vector<Vector3D> readCubicBezierData(const char* filename) {
+std::vector<Vector3D> readCubicBezierVertices(const char* filename) {
     std::ifstream file(filename);
     if (!file.is_open()) {
+        file.close();
         throw std::invalid_argument("Error opening file: " + std::string(filename));
     }
 
     std::vector<Vector3D> data;
     Vector3D vector;
-
-    while (true) {
-        for (uint32_t i = 0; i < 16; i++) { 
-            if ((file >> vector.x) && (file >> vector.y) && (file >> vector.z)) {
-                data.push_back(vector);     
-            } else {
-                goto readCubicBezierSurfacesOutOfLoop;
-            }
-        }
+    while ((file >> vector.x) && (file >> vector.y) && (file >> vector.z)) {
+        data.push_back(vector);     
     }
-
-readCubicBezierSurfacesOutOfLoop:
     file.close();
+
+    if (data.size() & 0xF != 0) {
+        throw std::invalid_argument("Number of vertices is not a multiple of 16!");
+    }
     return data;
 }
 
 // The function which renders a portion of the image
 void threadFunction(uint32_t widthStart, uint32_t widthEnd) {
+    const float dx = 1.0f / IMAGE_WIDTH;
+    const float dy = 1.0f / IMAGE_HEIGHT;
+    float x = (widthStart+0.5f) / IMAGE_WIDTH;
     for (uint32_t i = widthStart; i < widthEnd; i++) { // x axis
+        float y = dy / 2.0f;
         for (uint32_t j = 0; j < IMAGE_HEIGHT; j++) { // y axis     
-            // Generate a ray from camera to the center of the pixel
-            const float x = (i+0.5f) / IMAGE_WIDTH;
-            const float y = (j+0.5f) / IMAGE_HEIGHT;
+            // Generate a ray from the camera and trace it
             const Ray ray = camera.generateRay(x, y);
-            
-            // Calculate the color of the pixel
             Color& color = image[(IMAGE_HEIGHT-j-1)*IMAGE_WIDTH + i];
             traceRay(ray, color, WORLD_REFRACTIVE_INDEX, 1.0f, 1);
+            y += dy;
         }
+        x += dx;
     }
 }
 
@@ -286,7 +287,7 @@ int main(int argc, char **argv) {
     std::chrono::_V2::system_clock::time_point start = std::chrono::high_resolution_clock::now();
 
     // Scale, rotate, and translate the cubic bezier vertices that are read from the file
-    std::vector<Vector3D> teapotBezierVertices = readCubicBezierData("data/utah_teapot_bezier.txt");
+    std::vector<Vector3D> teapotBezierVertices = readCubicBezierVertices("data/utah_teapot_bezier.txt");
     for (uint32_t i = 0; i < teapotBezierVertices.size(); i++) {
         teapotBezierVertices[i] *= teapotScale;
         teapotBezierVertices[i].rotate(teapotRadianX, teapotRadianY, teapotRadianZ);
@@ -307,7 +308,7 @@ int main(int argc, char **argv) {
         );
     }
     std::vector<Shape*> teapotBodyShapes;
-    for (uint32_t i = 0; i < 12; i++) {
+    for (uint32_t i = 0; i < teapotBodyBezierSurfaces.size(); i++) {
         teapotBodyShapes.push_back((Shape*)&teapotBodyBezierSurfaces[i]);
     }
     const Mesh teapotBody = Mesh(teapotBodyShapes);
@@ -326,7 +327,7 @@ int main(int argc, char **argv) {
         );
     }
     std::vector<Shape*> teapotHandleShapes;
-    for (uint32_t i = 0; i < 4; i++) {
+    for (uint32_t i = 0; i < teapotHandleBezierSurfaces.size(); i++) {
         teapotHandleShapes.push_back((Shape*)&teapotHandleBezierSurfaces[i]);
     }
     const Mesh teapotHandle = Mesh(teapotHandleShapes);
@@ -345,7 +346,7 @@ int main(int argc, char **argv) {
         );
     }
     std::vector<Shape*> teapotSpoutShapes;
-    for (uint32_t i = 0; i < 4; i++) {
+    for (uint32_t i = 0; i < teapotSpoutBezierSurfaces.size(); i++) {
         teapotSpoutShapes.push_back((Shape*)&teapotSpoutBezierSurfaces[i]);
     }
     const Mesh teapotSpout = Mesh(teapotSpoutShapes);
@@ -364,34 +365,39 @@ int main(int argc, char **argv) {
         );
     }
     std::vector<Shape*> teapotLidShapes;
-    for (uint32_t i = 0; i < 8; i++) {
+    for (uint32_t i = 0; i < teapotLidBezierSurfaces.size(); i++) {
         teapotLidShapes.push_back((Shape*)&teapotLidBezierSurfaces[i]);
     }
     const Mesh teapotLid = Mesh(teapotLidShapes);
 
-    const std::vector<Shape*> teapotShapes = std::vector<Shape*>{(Shape*)&teapotBody, (Shape*)&teapotHandle, (Shape*)&teapotSpout, (Shape*)&teapotLid};
+    const std::vector<Shape*> teapotShapes = {
+        (Shape*)&teapotBody, 
+        (Shape*)&teapotHandle, 
+        (Shape*)&teapotSpout, 
+        (Shape*)&teapotLid,
+    };
     const Mesh teapot = Mesh(teapotShapes);
 
     // Move all shapes to the Shapes vector
     for (uint32_t i = 0; i < sizeof(spheres) / sizeof(Sphere); i++) {
-        shapes.push_back((Shape*)(spheres+i));
+        shapes[shapeNumber++] = ((Shape*)(spheres+i));
     }
     for (uint32_t i = 0; i < sizeof(aabbs) / sizeof(AABB); i++) {
-        shapes.push_back((Shape*)(aabbs+i));
+        shapes[shapeNumber++] = ((Shape*)(aabbs+i));
     }
     for (uint32_t i = 0; i < sizeof(triangles) / sizeof(Triangle); i++) {
-        shapes.push_back((Shape*)(triangles+i));
+        shapes[shapeNumber++] = ((Shape*)(triangles+i));
     }
-    shapes.push_back((Shape*)&teapot);
+    shapes[shapeNumber++] = ((Shape*)&teapot);
 
     std::cout << "Rendering..." << std::endl;
 
     // Start threads
-    std::vector<std::thread> threads;
+    std::vector<std::thread> threads(THREAD_NUMBER);
     for (uint32_t i = 0; i < THREAD_NUMBER; i++) {
         const uint32_t widthStart = i * WIDTH_PER_THREAD;
         const uint32_t widthEnd = widthStart + WIDTH_PER_THREAD;
-        threads.push_back(std::thread(threadFunction, widthStart, widthEnd));
+        threads[i] = std::thread(threadFunction, widthStart, widthEnd);
     }
 
     // Wait until all threads join

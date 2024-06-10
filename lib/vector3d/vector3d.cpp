@@ -7,6 +7,17 @@ Vector3D::Vector3D(float value) : x(value), y(value), z(value) {}
 
 Vector3D::Vector3D(float x_, float y_, float z_) : x(x_), y(y_), z(z_) {}
 
+Vector3D::Vector3D(float theta, float phi) {
+    const float sinTheta = sinf(theta);
+    const float cosTheta = cosf(theta);
+    const float sinPhi = sinf(phi);
+    const float cosPhi = cosf(phi);
+
+    x = sinTheta * cosPhi;
+    y = sinTheta * sinPhi;
+    z = cosTheta;
+}
+
 Vector3D Vector3D::operator + (const Vector3D& other) const {
     return Vector3D(x+other.x, y+other.y, z+other.z);
 }

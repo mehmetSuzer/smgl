@@ -1,7 +1,7 @@
 
 #include "triangle.h"
 
-Triangle::Triangle(): Shape(Color::Black, 0.0f, 0.0f, VACUUM_REFRACTIVE_INDEX) {}
+Triangle::Triangle(): Shape() {}
     
 Triangle::Triangle(const Vector3D& a, const Vector3D& b, const Vector3D& c, 
     const Color& color, float reflectivity, float transparency, float refractiveIndex) 
@@ -25,7 +25,7 @@ bool Triangle::intersect(Intersect* intersect, Shape** intersectedShape, const R
     Vector3D vector = points[0] - ray.origin;
     const Vector3D result = Matrix3x3::solve(matrix, vector);
 
-    // If Beta > 0 and Gamma > 0, Beta + Gamma < 1, t > 0, and t < far, the ray intersects the triangle
+    // If Beta > 0 and Gamma > 0, Beta + Gamma < 1, and 0 < t < far, the ray intersects the triangle
     if (result.x > EPSILON6 && result.y > EPSILON6 && result.x + result.y < 1.0f && result.z > EPSILON6 && result.z < far) {
         if (intersectedShape != NULL) {
             *intersectedShape = (Shape*)this;

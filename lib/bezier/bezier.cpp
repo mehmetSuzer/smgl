@@ -1,7 +1,7 @@
 
 #include "bezier.h"
 
-BezierSurface::BezierSurface() : Shape(Color::Black, 0.0f, 0.0f, VACUUM_REFRACTIVE_INDEX), subdivision(4) {}
+BezierSurface::BezierSurface() : Shape(), subdivision(4) {}
 
 BezierSurface::BezierSurface(const Vector3D* controlPoints_, uint32_t subdivision_, const Color& color, 
     float reflectivity, float transparency, float refractiveIndex) : Shape(color, reflectivity, transparency, refractiveIndex), 
@@ -59,9 +59,10 @@ Vector3D BezierSurface::getPoint(float u, float v) const {
     generateControlPointScalars(vVector, v);
 
     Vector3D point = Vector3D(0.0f, 0.0f, 0.0f);
+    uint32_t index = 0;
     for (uint32_t i = 0; i < 4; i++) {
         for (uint32_t j = 0; j < 4; j++) {
-            point += controlPoints[(i<<2)+j] * (uVector[i] * vVector[j]);
+            point += controlPoints[index++] * (uVector[i] * vVector[j]);
         }
     }
 

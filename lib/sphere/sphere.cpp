@@ -1,7 +1,7 @@
 
 #include "sphere.h"
 
-Sphere::Sphere(): Shape(Color::Black, 0.0f, 0.0f, VACUUM_REFRACTIVE_INDEX), radius(1.0f) {}
+Sphere::Sphere(): Shape(), radius(1.0f) {}
 
 Sphere::Sphere(const Vector3D& center_, float radius_, const Color& color, float reflectivity, float transparency, float refractiveIndex) 
     : Shape(color, reflectivity, transparency, refractiveIndex), center(center_), radius(radius_) {
@@ -34,7 +34,7 @@ bool Sphere::intersect(Intersect* intersect, Shape** intersectedShape, const Ray
         if (intersect != NULL) {
             intersect->t = t;
             intersect->hitLocation = ray.origin + ray.dir * t;
-            intersect->normal = (intersect->hitLocation - center).normalize();
+            intersect->normal = (intersect->hitLocation - center) / radius;
             if (rayOriginIsInSphere) {
                 intersect->normal *= -1.0f;
             }

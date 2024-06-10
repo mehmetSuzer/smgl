@@ -1,6 +1,8 @@
 
 #include "shape.h"
 
+Shape::Shape() : color(Color::Black), reflectivity(0.0f), transparency(0.0f), refractiveIndex(VACUUM_REFRACTIVE_INDEX) {}
+
 Shape::Shape(const Color& color_, float reflectivity_, float transparency_, float refractiveIndex_) 
     : color(color_), reflectivity(reflectivity_), transparency(transparency_), refractiveIndex(refractiveIndex_) {
     

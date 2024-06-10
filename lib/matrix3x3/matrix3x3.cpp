@@ -186,7 +186,6 @@ Vector3D Matrix3x3::solve(Matrix3x3& matrix, Vector3D& vector) {
 
     if (abs(matrix.xs[1][0]) > EPSILON5) {
         const float scalar0 = matrix.xs[1][0] / matrix.xs[0][0];
-        matrix.xs[1][0] = 0.0f;
         matrix.xs[1][1] -= matrix.xs[0][1] * scalar0;
         matrix.xs[1][2] -= matrix.xs[0][2] * scalar0;
         vector.y -= vector.x * scalar0;
@@ -194,7 +193,6 @@ Vector3D Matrix3x3::solve(Matrix3x3& matrix, Vector3D& vector) {
 
     if (abs(matrix.xs[2][0]) > EPSILON5) {
         const float scalar1 = matrix.xs[2][0] / matrix.xs[0][0];
-        matrix.xs[2][0] = 0.0f;
         matrix.xs[2][1] -= matrix.xs[0][1] * scalar1;
         matrix.xs[2][2] -= matrix.xs[0][2] * scalar1;
         vector.z -= vector.x * scalar1;
@@ -203,7 +201,6 @@ Vector3D Matrix3x3::solve(Matrix3x3& matrix, Vector3D& vector) {
     // Ensure that matrix[1][1] is not zero
     if (abs(matrix.xs[1][1]) > EPSILON5) {
         const float scalar2 = matrix.xs[2][1] / matrix.xs[1][1];
-        matrix.xs[2][1] = 0.0f;
         matrix.xs[2][2] -= matrix.xs[1][2] * scalar2;
         vector.z -= vector.y * scalar2;
     } else {

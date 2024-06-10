@@ -30,6 +30,7 @@ public:
     Vector3D();
     Vector3D(float value);
     Vector3D(float x_, float y_, float z_);
+    Vector3D(float theta, float phi);
     
     Vector3D operator + (const Vector3D& other) const;
     void operator += (const Vector3D& other);

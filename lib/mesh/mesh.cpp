@@ -1,7 +1,7 @@
 
 #include "mesh.h"
 
-Mesh::Mesh(const std::vector<Shape*>& shapes_) : Shape(Color::Black, 0.0f, 0.0f, VACUUM_REFRACTIVE_INDEX), shapes(shapes_) {
+Mesh::Mesh(const std::vector<Shape*>& shapes_) : Shape(), shapes(shapes_) {
     Vector3D minPoint;
     Vector3D maxPoint;
     findAABBMinMaxPoints(minPoint, maxPoint);

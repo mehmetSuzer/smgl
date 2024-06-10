@@ -4,7 +4,7 @@
 Camera::Camera(const Vector3D& position_, const Vector3D& direction_, const Vector3D& up_, float near_, float far_, 
     float FOVRadian_, uint32_t width_, uint32_t height_) : position(position_), near(near_), far(far_) {
         
-    assert(near_ > EPSILON3);
+    assert(near_ > EPSILON4);
     assert(far_ > near_);
     assert(EPSILON1 < FOVRadian_ && FOVRadian_ < M_PIf * 0.98f);
 

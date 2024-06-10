@@ -6,8 +6,8 @@
 
 class AABB : public Shape {
 private:
-    Vector3D minPoint = Vector3D(-INFINITY, -INFINITY, -INFINITY);
-    Vector3D maxPoint = Vector3D(INFINITY, INFINITY, INFINITY);
+    Vector3D minPoint = Vector3D(-INFINITY);
+    Vector3D maxPoint = Vector3D(INFINITY);
 
 public:
     AABB();

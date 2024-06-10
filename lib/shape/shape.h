@@ -39,6 +39,7 @@ private:
     const float refractiveIndex;
 
 public:
+    Shape();
     Shape(const Color& color_, float reflectivity_, float transparency_, float refractiveIndex_);
 
     float getTransparency(void) const;

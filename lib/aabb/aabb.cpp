@@ -1,7 +1,7 @@
 
 #include "aabb.h"
 
-AABB::AABB() : Shape(Color::Black, 0.0f, 0.0f, VACUUM_REFRACTIVE_INDEX) {}
+AABB::AABB() : Shape() {}
 
 AABB::AABB(const Vector3D& minPoint_, const Vector3D& maxPoint_, const Color& color, float reflectivity, float transparency, float refractiveIndex) 
     : Shape(color, reflectivity, transparency, refractiveIndex), minPoint(minPoint_), maxPoint(maxPoint_) {
