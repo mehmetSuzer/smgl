@@ -16,6 +16,7 @@
 
 #define MAX_RECURSIVE_RAY_TRACING_DEPTH 6UL
 #define MAX_SHAPE_COUNT 100UL
+#define MIN_ENERGY_DENSITY (1.0f/255.0f)
 
 #define IMAGE_HEIGHT  840UL
 #define IMAGE_WIDTH   840UL
@@ -100,16 +101,16 @@ const PointLight pointLight = PointLight(
 );
 
 const DirectionalLight directionalLight = DirectionalLight(
-    Vector3D(sqrtf(0.5f), 0.0f, sqrtf(0.5f)), 
+    Vector3D(0.0f, -sqrtf(0.5f), sqrtf(0.5f)), 
     Color::White, 
     1.0f
 );
 const SpotLight spotLight = SpotLight(
-    Vector3D(0.0f, GROUND_LEVEL + 250.0f, 150.0f), 
+    Vector3D(0.0f, GROUND_LEVEL + 220.0f, 80.0f), 
     Color::White, 
     2E-5f, 1E-5f, 
     Vector3D(0.0f, -1.0f, 0.0f), 
-    M_PIf/3.0f
+    M_PIf/2.0f
 );
 
 const Light* lights[] = {
@@ -134,20 +135,19 @@ const Camera camera = Camera(
 
 /* ----------------------------------------------------------------------*/
 
-void traceRay(const Ray& ray, Color& color, float incomingRefractiveIndex, float coefficientOfPreviousShape, uint32_t depthCount) {
-    // If the max recursive depth is exceeded, then stop tracing
-    if (depthCount > MAX_RECURSIVE_RAY_TRACING_DEPTH) {
+void traceRay(const Ray& ray, Color& color, float incomingRefractiveIndex, float energyDensity, uint32_t depthCount) {
+    // If the max recursive depth is exceeded or the energy density is less than a threshold, stop tracing
+    if (depthCount > MAX_RECURSIVE_RAY_TRACING_DEPTH || energyDensity < MIN_ENERGY_DENSITY) {
         return;
     }
 
-    uint32_t i, j;
     Intersect closestIntersect = {.t = INFINITY};
     Intersect currentIntersect;
     Shape* closestShape = NULL;
     Shape* currentShape;
 
     // Check whether the ray intersects with a shape
-    for (i = 0; i < shapeNumber; i++) {
+    for (uint32_t i = 0; i < shapeNumber; i++) {
         if (shapes[i]->intersect(&currentIntersect, &currentShape, ray, camera.getFar()) && currentIntersect.t < closestIntersect.t) {
             closestIntersect = currentIntersect;
             closestShape = currentShape;
@@ -161,7 +161,7 @@ void traceRay(const Ray& ray, Color& color, float incomingRefractiveIndex, float
             color += AMBIENT_COLOR * AMBIENT_COEF;
         }
 
-        for (i = 0; i < lightNumber; i++) {
+        for (uint32_t i = 0; i < lightNumber; i++) {
             const LightInfo lightInfo = lights[i]->shine(closestIntersect.hitLocation);
             if (lightInfo.distance == -INFINITY) { // Light does not hit to the hit location
                 continue;
@@ -174,7 +174,7 @@ void traceRay(const Ray& ray, Color& color, float incomingRefractiveIndex, float
 
             // Check if a shape casts a shadow onto the point
             Shape* shadowingShape = NULL;
-            for (j = 0; j < shapeNumber && shadowingShape == NULL; j++) {
+            for (uint32_t j = 0; j < shapeNumber && shadowingShape == NULL; j++) {
                 shapes[j]->intersect(NULL, &shadowingShape, lightRay, lightInfo.distance);
             }
             const float shadowingShapeTransparency = (shadowingShape != NULL) ? shadowingShape->getTransparency() : WORLD_TRANSPARENCY;
@@ -188,7 +188,7 @@ void traceRay(const Ray& ray, Color& color, float incomingRefractiveIndex, float
             color += closestShape->getColor() * lights[i]->getColor()
                 * ((diffuse + specular) 
                 * lightInfo.intensity                         // As intensity of the light increases, the point looks brighter
-                * coefficientOfPreviousShape                  // As the reflectivity and the transparency of the previous shape increases, the current object gets more visible
+                * energyDensity                               // As the reflectivity and the transparency of the previous shape increases, the current object gets more visible
                 * shadowingShapeTransparency                  // If an object casts shadow onto the point, the point looks dimmer
                 * (1.0f - closestShape->getTransparency()     // As the transparency of the shape increases, its color gets less visible
                         - closestShape->getReflectivity()));  // As the reflectivity of the shape increases, its color gets less visible
@@ -216,7 +216,7 @@ void traceRay(const Ray& ray, Color& color, float incomingRefractiveIndex, float
                     refractiveRay, 
                     color, 
                     outgoingRefractiveIndex, 
-                    coefficientOfPreviousShape * closestShape->getTransparency(), 
+                    energyDensity * closestShape->getTransparency(), 
                     depthCount+1
                 );
             } else { // A total reflection occurs
@@ -236,7 +236,7 @@ void traceRay(const Ray& ray, Color& color, float incomingRefractiveIndex, float
                 reflectiveRay, 
                 color, 
                 incomingRefractiveIndex, 
-                coefficientOfPreviousShape * reflectivePortion,
+                energyDensity * reflectivePortion,
                 depthCount+1
             );
         }
@@ -265,18 +265,21 @@ std::vector<Vector3D> readCubicBezierVertices(const char* filename) {
 }
 
 // The function which renders a portion of the image
-void threadFunction(uint32_t widthStart, uint32_t widthEnd) {
-    const float dx = 1.0f / IMAGE_WIDTH;
+void threadFunction(uint32_t index) {
+    const float dx = 1.0f / WIDTH_PER_THREAD;
     const float dy = 1.0f / IMAGE_HEIGHT;
-    float x = (widthStart+0.5f) / IMAGE_WIDTH;
-    for (uint32_t i = widthStart; i < widthEnd; i++) { // x axis
-        float y = dy / 2.0f;
+    float x = (index+0.5f) / IMAGE_WIDTH;
+
+    for (uint32_t i = 0; i < WIDTH_PER_THREAD; i++) { // x axis
+        uint32_t colorIndex = index + i*THREAD_NUMBER;
+        float y = 1.0f - dy / 2.0f;
         for (uint32_t j = 0; j < IMAGE_HEIGHT; j++) { // y axis     
-            // Generate a ray from the camera and trace it
             const Ray ray = camera.generateRay(x, y);
-            Color& color = image[(IMAGE_HEIGHT-j-1)*IMAGE_WIDTH + i];
+            Color& color = image[colorIndex];
             traceRay(ray, color, WORLD_REFRACTIVE_INDEX, 1.0f, 1);
-            y += dy;
+
+            colorIndex += IMAGE_WIDTH;
+            y -= dy;
         }
         x += dx;
     }
@@ -395,9 +398,7 @@ int main(int argc, char **argv) {
     // Start threads
     std::vector<std::thread> threads(THREAD_NUMBER);
     for (uint32_t i = 0; i < THREAD_NUMBER; i++) {
-        const uint32_t widthStart = i * WIDTH_PER_THREAD;
-        const uint32_t widthEnd = widthStart + WIDTH_PER_THREAD;
-        threads[i] = std::thread(threadFunction, widthStart, widthEnd);
+        threads[i] = std::thread(threadFunction, i);
     }
 
     // Wait until all threads join
