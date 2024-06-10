@@ -67,7 +67,7 @@ const Triangle triangles[] = {
 /* ----------------------------------------------------------------------*/
 
 const Sphere spheres[] = {
-    Sphere(Vector3D(-30.0f, GROUND_LEVEL + 50.0f, 200.0f), 50.0f, Color::Yellow, 0.3f, 0.0f, GLASS_REFRACTIVE_INDEX),
+    Sphere(Vector3D(-30.0f, GROUND_LEVEL + 50.0f, 230.0f), 50.0f, Color::Yellow, 0.3f, 0.0f, GLASS_REFRACTIVE_INDEX),
     // Sphere(Vector3D(50.0f, GROUND_LEVEL + 50.0f, 220.0f), 50.0f, Color::Green, 0.4f, 0.0f, GLASS_REFRACTIVE_INDEX),
     // Sphere(Vector3D(0.0f, GROUND_LEVEL + 20.0f, 120.0f), 20.0f, Color::Blue, 0.0f, 0.99f, GLASS_REFRACTIVE_INDEX),
 };
@@ -114,8 +114,8 @@ const SpotLight spotLight = SpotLight(
 );
 
 const Light* lights[] = {
-    (Light*)&pointLight,
-    // (Light*)&directionalLight,
+    // (Light*)&pointLight,
+    (Light*)&directionalLight,
     // (Light*)&spotLight,
 };
 const uint32_t lightNumber = sizeof(lights) / sizeof(Light*);
@@ -167,17 +167,20 @@ void traceRay(const Ray& ray, Color& color, float incomingRefractiveIndex, float
                 continue;
             }
             
-            const Ray lightRay = {
+            const Ray shadowRay = {
                 .origin = closestIntersect.hitLocation + closestIntersect.normal * EPSILON3,
                 .dir = lightInfo.directionToLight,
             };
 
             // Check if a shape casts a shadow onto the point
             Shape* shadowingShape = NULL;
-            for (uint32_t j = 0; j < shapeNumber && shadowingShape == NULL; j++) {
-                shapes[j]->intersect(NULL, &shadowingShape, lightRay, lightInfo.distance);
+            float leastShadowingShapeTransparency = WORLD_TRANSPARENCY;
+            for (uint32_t j = 0; j < shapeNumber; j++) {
+                if (shapes[j]->intersect(NULL, &shadowingShape, shadowRay, lightInfo.distance) && 
+                    shadowingShape->getTransparency() < leastShadowingShapeTransparency) {
+                    leastShadowingShapeTransparency = shadowingShape->getTransparency();
+                }
             }
-            const float shadowingShapeTransparency = (shadowingShape != NULL) ? shadowingShape->getTransparency() : WORLD_TRANSPARENCY;
 
             // Calculate diffuse and specular light intensity
             const float diffuse = DIFFUSE_COEF * greater(lightInfo.directionToLight.dot(closestIntersect.normal), 0.0f);
@@ -189,7 +192,7 @@ void traceRay(const Ray& ray, Color& color, float incomingRefractiveIndex, float
                 * ((diffuse + specular) 
                 * lightInfo.intensity                         // As intensity of the light increases, the point looks brighter
                 * energyDensity                               // As the reflectivity and the transparency of the previous shape increases, the current object gets more visible
-                * shadowingShapeTransparency                  // If an object casts shadow onto the point, the point looks dimmer
+                * leastShadowingShapeTransparency             // If an object casts shadow onto the point, the point looks dimmer
                 * (1.0f - closestShape->getTransparency()     // As the transparency of the shape increases, its color gets less visible
                         - closestShape->getReflectivity()));  // As the reflectivity of the shape increases, its color gets less visible
         }
